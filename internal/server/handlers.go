@@ -24,6 +24,13 @@ const (
 	binarySniff   = 8 << 10
 )
 
+// contentSecurityPolicy is sent with the UI. It only allows our own scripts
+// and styles, so even if untrusted text (commit messages, file names) ever
+// reached the DOM unescaped, nothing could run or be exfiltrated, and no other
+// site can frame the UI.
+const contentSecurityPolicy = "default-src 'none'; script-src 'self'; style-src 'self'; " +
+	"connect-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'; frame-ancestors 'none'"
+
 type repoInfo struct {
 	Name    string `json:"name"`
 	Path    string `json:"path"`
@@ -227,5 +234,6 @@ func (s *Server) handleStatic(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", ctype)
 	w.Header().Set("Cache-Control", "no-store")
 	w.Header().Set("X-Content-Type-Options", "nosniff")
+	w.Header().Set("Content-Security-Policy", contentSecurityPolicy)
 	_, _ = w.Write(data)
 }

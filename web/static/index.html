@@ -1,2 +1,46 @@
 <!DOCTYPE html>
-<html lang="en"><head><meta charset="utf-8"><title>agentlog</title></head><body></body></html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>agentlog</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">agent<span>log</span></div>
+    <div class="repo">
+      <span class="live" id="live" title="live: refreshes as commits land"></span>
+      <span id="repoName">…</span>
+      <span class="pill" id="branch">…</span>
+    </div>
+    <div class="spacer"></div>
+    <span class="kbd" aria-hidden="true"><b>j</b>/<b>k</b> move</span>
+    <div class="seg" id="order" role="group" aria-label="Order">
+      <button type="button" data-order="new" aria-pressed="true">Newest first</button>
+      <button type="button" data-order="old" aria-pressed="false">Story order</button>
+    </div>
+    <input class="search" id="filter" type="text" placeholder="Filter commits or files…"
+           autocomplete="off" spellcheck="false" aria-label="Filter commits">
+  </header>
+
+  <main>
+    <aside id="timeline" aria-label="Commit timeline"></aside>
+    <section id="detail" aria-live="polite">
+      <div class="placeholder">Pick a commit</div>
+    </section>
+  </main>
+
+  <div class="modal" id="modal" hidden role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="m-box">
+      <div class="m-head">
+        <span id="modalTitle"></span>
+        <button type="button" class="f-btn" id="modalClose">Close (Esc)</button>
+      </div>
+      <div class="m-body" id="modalBody"></div>
+    </div>
+  </div>
+
+  <script type="module" src="/app.js"></script>
+</body>
+</html>

@@ -178,6 +178,20 @@ ever run inside a repo. Verified: a full `go test ./...` leaves HEAD, status and
   record, so the first becomes an orphan that exits via the 8 h idle timeout. Acceptable for v1.
 - **Stale `stop-*`/`start-*` hook locks** are swept lazily by the next hook run (>1 min old).
 
+## Web UI (M4)
+
+- **No `innerHTML` anywhere; DOM is built with `createElement`/`textContent`.** Commit subjects, bodies
+  and file paths are untrusted text. This removes the XSS class instead of relying on escaping, so
+  `util.js` has no `esc` (the spec lists one).
+- **Strict CSP on the UI:** `default-src 'none'; script-src 'self'; style-src 'self'; connect-src
+  'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'; frame-ancestors 'none'`. No inline
+  scripts or `style=""` attributes (JS sets styles through the CSSOM, which CSP allows).
+- **Test tooling:** `npm` is broken on this machine (invalid auth entry for an internal registry in the
+  user's npmrc, which was not touched) and pnpm's offline mirror lacks Playwright. `e2e/node_modules` is
+  a local, git-ignored symlink to an existing Playwright 1.65.0 install in another project on this
+  machine, and the tests are run with `node e2e/node_modules/@playwright/test/cli.js` instead of `npx`.
+  On a normal machine `npm install` in `e2e/` produces the same layout.
+
 ## Later
 
 - `WorkingPatch` spawns one `git diff --no-index` per untracked file (up to 200). Fine on

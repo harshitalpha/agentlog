@@ -518,6 +518,15 @@ func TestIndexIsServed(t *testing.T) {
 		if rec.Header().Get("X-Content-Type-Options") != "nosniff" {
 			t.Errorf("%s: missing nosniff", p)
 		}
+		csp := rec.Header().Get("Content-Security-Policy")
+		for _, want := range []string{"default-src 'none'", "script-src 'self'", "frame-ancestors 'none'", "connect-src 'self'"} {
+			if !strings.Contains(csp, want) {
+				t.Errorf("%s: CSP %q is missing %q", p, csp, want)
+			}
+		}
+		if strings.Contains(csp, "unsafe-inline") || strings.Contains(csp, "unsafe-eval") {
+			t.Errorf("%s: CSP must not allow inline or eval: %q", p, csp)
+		}
 	}
 }
 
