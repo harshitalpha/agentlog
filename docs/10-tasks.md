@@ -14,7 +14,7 @@ Work top to bottom. Tick each box only when its acceptance criteria pass. Commit
 
 - [x] **T1.1 Runner + repo basics.** `run.go`, `repo.go`, `identity.go`, `config.go` (local get/set/unset).
 - [x] **T1.2 Status.** `DirtyFiles` with `-z` parsing and renames.
-- [ ] **T1.3 Log.** Format + numstat parser, limit handling.
+- [x] **T1.3 Log.** Format + numstat parser, limit handling.
 - [ ] **T1.4 Patches and files.** `CommitPatch`, `WorkingPatch` (untracked, empty-tree base), `FileAt`.
 - [ ] **T1.5 Commit helpers.** `AddAll`, `StagedEmpty`, `Commit`, `AutoCommit` (`05-agent-integration.md` §7).
   *Accept (M1):* all 10 edge-case tests in `06-git-layer.md` pass.
