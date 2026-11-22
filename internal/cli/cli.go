@@ -55,7 +55,7 @@ func commands() []command {
 		{"status", "show whether agentlog is enabled and what it has committed",
 			"agentlog status [path] [--json]", statusCmd},
 		{"ui", "open the timeline UI",
-			"agentlog ui [path] [--port N] [--no-open] [--detach] [--stop]", stub("ui")},
+			"agentlog ui [path] [--port N] [--no-open] [--detach] [--stop]", uiCmd},
 		{"watch", "auto-commit after edits settle (for agents without hooks)",
 			"agentlog watch [path] [--quiet 20] [--interval 2]", watchCmd},
 		{"hook-session-start", "Claude Code SessionStart hook (plugin use)",

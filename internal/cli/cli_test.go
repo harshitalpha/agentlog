@@ -62,14 +62,11 @@ func TestEveryCommandHasHelp(t *testing.T) {
 	}
 }
 
-// Only commands that are still stubs may be run with no arguments here: a
-// real command would operate on the current directory.
-func TestStubsDispatch(t *testing.T) {
-	for _, name := range []string{"ui"} {
-		code, _, errOut := runCapture(name)
-		if code != 1 || !strings.Contains(errOut, name+" is not implemented") {
-			t.Errorf("%s: code=%d err=%q", name, code, errOut)
-		}
+// stub() is kept for future commands; make sure it fails loudly, not silently.
+func TestStubFailsLoudly(t *testing.T) {
+	var out, errOut bytes.Buffer
+	if code := stub("x")(nil, streams{out: &out, err: &errOut}); code != 1 || !strings.Contains(errOut.String(), "x is not implemented yet") {
+		t.Fatalf("stub: code=%d err=%q", code, errOut.String())
 	}
 }
 
