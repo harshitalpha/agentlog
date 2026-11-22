@@ -39,7 +39,9 @@ func execGit(dir string, args ...string) (result, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), callTimeout)
 	defer cancel()
 
-	full := append([]string{"-C", dir}, args...)
+	// core.quotePath=false keeps non-ASCII paths readable in diff headers
+	// instead of "\303\274"-style escapes.
+	full := append([]string{"-C", dir, "-c", "core.quotePath=false"}, args...)
 	cmd := exec.CommandContext(ctx, "git", full...)
 	cmd.Env = append(os.Environ(), "GIT_TERMINAL_PROMPT=0", "LC_ALL=C")
 	var stdout, stderr bytes.Buffer
