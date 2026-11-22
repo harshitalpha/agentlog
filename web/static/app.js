@@ -28,6 +28,9 @@ const state = {
   patches: new Map(), // hash -> {files, truncated}; never holds WORKING
 };
 
+const UNREACHABLE = "Can't reach the agentlog server. It may have been stopped: run /agentlog:ui (or `agentlog ui`) to start it again.";
+
+// A failed fetch() is a TypeError ("Failed to fetch"): say what it means instead.
 async function getJSON(url) {
   const res = await fetch(url, { cache: 'no-store' });
   if (!res.ok) throw new Error(`${url}: HTTP ${res.status}`);
@@ -82,7 +85,7 @@ async function showDetail({ keepScroll = false } = {}) {
     el.scrollTop = keepScroll ? top : 0;
     if (state.query) drawTimeline(); // the filter can match this commit's files now
   } catch (err) {
-    if (state.selected === hash) renderError(el, `Could not load this commit: ${err.message}`);
+    if (state.selected === hash) renderError(el, err instanceof TypeError ? UNREACHABLE : `Could not load this commit: ${err.message}`);
   }
 }
 
@@ -166,7 +169,7 @@ async function openModal(hash, path) {
     const res = await getJSON(`/api/file?hash=${encodeURIComponent(hash)}&path=${encodeURIComponent(path)}`);
     if (token === modalToken) renderFileView($('#modalBody'), res);
   } catch (err) {
-    if (token === modalToken) renderModalMessage($('#modalBody'), `Could not load the file: ${err.message}`);
+    if (token === modalToken) renderModalMessage($('#modalBody'), err instanceof TypeError ? UNREACHABLE : `Could not load the file: ${err.message}`);
   }
 }
 

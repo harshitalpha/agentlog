@@ -22,6 +22,10 @@ base('the live dot goes grey after two failed polls and recovers when the server
     await expect(dot).toHaveAttribute('title', 'disconnected');
     // The page keeps what it already shows.
     await expect(page.locator('.item')).toHaveCount(9);
+    // Opening a commit now says what is wrong and how to fix it, not "Failed to fetch".
+    await page.locator('.item', { hasText: 'Add controller layer' }).click();
+    await expect(page.locator('#detail')).toContainText("Can't reach the agentlog server");
+    await expect(page.locator('#detail')).toContainText('/agentlog:ui');
 
     server = await startServer(dir, PORT);
     await expect(dot).not.toHaveClass(/off/, { timeout: 8000 });
