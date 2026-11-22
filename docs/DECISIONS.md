@@ -282,6 +282,16 @@ reference and marketplace reference. Everything in the spec still holds except t
 - Placeholders `OWNER` in the README, manifest, marketplace and module path are replaced at publish
   time (see `RELEASING.md`).
 
+## SIGPIPE (found in T6.5)
+
+- `agentlog init | head -1` used to exit 141 (SIGPIPE) after its first line, leaving a half-built repo
+  (no commits, not enabled). Go kills a process that writes to a broken stdout unless SIGPIPE is ignored,
+  and a hook whose reader went away would also have exited non-zero, against the "never exit non-zero" rule.
+  `cli.Run` now calls `signal.Ignore(syscall.SIGPIPE)`; writes fail with EPIPE and the print calls ignore
+  it. Covered by `TestInitSurvivesClosedStdout` (a helper process with a pipe nobody reads).
+- Side effect: long-running commands (`watch`, foreground `ui`) no longer die when their stdout reader
+  goes away; they run until Ctrl+C/SIGTERM. Acceptable; not worth special-casing.
+
 ## Later
 
 - `WorkingPatch` spawns one `git diff --no-index` per untracked file (up to 200). Fine on

@@ -87,6 +87,10 @@ func usageText() string {
 // Run executes the CLI and returns the process exit code
 // (0 success, 1 runtime error, 2 usage error).
 func Run(args []string) int {
+	// A closed stdout (`agentlog init | head -1`) must not kill us with SIGPIPE halfway through a
+	// command that changes state, and hooks must never exit non-zero. Ignored, the write simply
+	// fails with EPIPE, which the print calls disregard.
+	signal.Ignore(syscall.SIGPIPE)
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 	return run(args, streams{ctx: ctx, in: os.Stdin, out: os.Stdout, err: os.Stderr})

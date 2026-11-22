@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 	"testing"
 )
@@ -75,5 +76,47 @@ func TestWorkingDirectoryIsNotAGitRepo(t *testing.T) {
 	wd, _ := os.Getwd()
 	if out, err := exec.Command("git", "-C", wd, "rev-parse", "--show-toplevel").Output(); err == nil {
 		t.Fatalf("tests run inside a git repo (%s); a stray command could modify it", strings.TrimSpace(string(out)))
+	}
+}
+
+// A closed stdout (`agentlog init | head -1`, or a hook whose reader went away) must not kill the
+// process mid-command: Go dies with SIGPIPE on a broken stdout unless it is ignored, which would
+// leave a half-initialised repo and make a hook exit non-zero.
+func TestInitSurvivesClosedStdout(t *testing.T) {
+	if dir := os.Getenv("AGENTLOG_TEST_INIT_DIR"); dir != "" { // helper process
+		os.Exit(Run([]string{"init", dir}))
+	}
+	dir := t.TempDir()
+	if err := os.WriteFile(filepath.Join(dir, "x.go"), []byte("package x\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	r, w, err := os.Pipe()
+	if err != nil {
+		t.Fatal(err)
+	}
+	r.Close() // nobody reads: every write to w fails with EPIPE
+	cmd := exec.Command(os.Args[0], "-test.run=^TestInitSurvivesClosedStdout$")
+	cmd.Env = append(os.Environ(), "AGENTLOG_TEST_INIT_DIR="+dir)
+	cmd.Stdout = w
+	err = cmd.Run()
+	w.Close()
+	if err != nil {
+		t.Fatalf("init did not survive a closed stdout: %v", err)
+	}
+	git := func(args ...string) string {
+		out, err := exec.Command("git", append([]string{"-C", dir}, args...)...).Output()
+		if err != nil {
+			t.Fatalf("git %v: %v", args, err)
+		}
+		return strings.TrimSpace(string(out))
+	}
+	if n := git("rev-list", "--count", "HEAD"); n != "2" {
+		t.Errorf("commits = %s, want 2 (baseline + rules)", n)
+	}
+	if got := git("config", "agentlog.enabled"); got != "true" {
+		t.Errorf("agentlog.enabled = %q", got)
+	}
+	if git("ls-files", "AGENTS.md") != "AGENTS.md" {
+		t.Error("AGENTS.md was not committed")
 	}
 }
