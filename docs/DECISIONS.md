@@ -234,6 +234,23 @@ reference and marketplace reference. Everything in the spec still holds except t
 - **Hooks:** the file keeps the `"hooks"` wrapper and the quoted `"${CLAUDE_PLUGIN_ROOT}"` shell form.
 - **Windows:** PowerShell-only machines are unsupported in v1 (launcher is POSIX sh; Git Bash works).
 
+## Local plugin run (T5.6, claude 2.1.323, `claude -p --plugin-dir ./plugin`, scratch dirs under /tmp)
+
+- `/agentlog:init` on a folder with no git: repo, baseline commit (`.env` stayed untracked), rules commit,
+  `agentlog.enabled=true`. Run again: HEAD unchanged. This confirms `${CLAUDE_PROJECT_DIR}` is substituted
+  inline in skill bodies as the docs say.
+- `/agentlog:status` reported the repo correctly. `/agentlog:ui` twice printed the same URL and left one
+  server process; `/agentlog:ui stop` removed it.
+- Stop hook, enabled repo: told "create a file, do not run git", Claude was blocked once and then the second
+  attempt auto-committed (`agentlog` author, `[auto]` subject, `Agent: auto`), tree clean. Claude does
+  follow an explicit "don't run git" over the hook, so the `stop_hook_active` auto-commit is what guarantees
+  the result.
+- Stop hook, repo where init never ran: one turn, no block, no commit, no `.git/agentlog/` created.
+- `/agentlog:disable`: commits untouched, enforcement off, a following edit finished without a block.
+- Live checks on the UI: `Host: evil.com` gives 403, POST gives 405.
+- `make validate` (strict plugin validation and marketplace validation) passes, and `make dist` builds all
+  five platforms (this also compiles the Windows spawn code for real).
+
 ## Later
 
 - `WorkingPatch` spawns one `git diff --no-index` per untracked file (up to 200). Fine on
