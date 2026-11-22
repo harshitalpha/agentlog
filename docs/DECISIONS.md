@@ -30,6 +30,14 @@ Choices made where the spec was ambiguous or the real world disagreed. Newest la
 - **Git commit message cleanup** collapses runs of blank lines, so `Commit.Body` never contains
   more than one consecutive blank line.
 
+- **`Commit` takes `CommitOpts{Identity, NoVerify, NoSign}`** instead of a bare `*Identity`, so
+  options are explicit. `AutoCommit` sets all three: reserved `agentlog` identity via `git -c`,
+  `--no-verify`, and `commit.gpgsign=false`. Signing is forced off because many users sign
+  commits globally; signing under the reserved identity could fail or prompt, and the Stop-hook
+  safety net must never lose work.
+- **Auto-commit subject lists files in `git status` path order** (not edit order), truncated to
+  100 runes.
+
 ## Later
 
 - `WorkingPatch` spawns one `git diff --no-index` per untracked file (up to 200). Fine on
