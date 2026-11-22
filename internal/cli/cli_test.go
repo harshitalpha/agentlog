@@ -8,7 +8,7 @@ import (
 
 func runCapture(args ...string) (code int, out, errOut string) {
 	var o, e bytes.Buffer
-	code = run(args, streams{out: &o, err: &e})
+	code = run(args, streams{in: strings.NewReader(""), out: &o, err: &e})
 	return code, o.String(), e.String()
 }
 
@@ -63,6 +63,9 @@ func TestEveryCommandHasHelp(t *testing.T) {
 func TestStubsDispatch(t *testing.T) {
 	for _, c := range commands() {
 		code, out, errOut := runCapture(c.name)
+		if c.name == "hook-session-start" {
+			continue // implemented; covered in hooks_test.go
+		}
 		if strings.HasPrefix(c.name, "hook-") {
 			if code != 0 || out != "" || errOut != "" {
 				t.Errorf("%s must exit 0 silently, got code=%d out=%q err=%q", c.name, code, out, errOut)

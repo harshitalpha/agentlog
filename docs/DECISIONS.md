@@ -38,6 +38,25 @@ Choices made where the spec was ambiguous or the real world disagreed. Newest la
 - **Auto-commit subject lists files in `git status` path order** (not edit order), truncated to
   100 runes.
 
+## Hooks (M2)
+
+- **Hook output shapes verified against https://code.claude.com/docs/en/hooks (2026-11-22):**
+  SessionStart context goes in `{"hookSpecificOutput":{"hookEventName":"SessionStart","additionalContext":"…"}}`
+  (also supports `sessionTitle`; plain stdout works too, but we print JSON as the spec says).
+  Stop input has `stop_hook_active` (true when Claude is already continuing because of a stop hook)
+  and blocks with `{"decision":"block","reason":"…"}`. No change to the spec was needed.
+- **Docs mention an 8-consecutive-continuation cap** on Stop hooks (resets when Claude calls a
+  tool). Our design (block once, auto-commit on the second try) stays far below it.
+- **Output limit:** hook `additionalContext` is capped at 10,000 characters; the rules text is
+  ~1.3 KB and a test guards the cap.
+- **Not-enabled hint is on by default.** In a git repo where the plugin is installed but not
+  opted in, SessionStart adds the one-line `NotEnabledHint` (spec §2 says "may"). It never blocks.
+  If it proves noisy, drop it or gate it behind a plugin option.
+- **Malformed hook stdin → no output, exit 0.** Empty stdin is treated as `{}` and falls back to
+  `$CLAUDE_PROJECT_DIR`, then the working directory.
+- **Hook errors** go to stderr and `${CLAUDE_PLUGIN_DATA}/agentlog.log`; `runHook` also recovers
+  from panics so a hook can never exit non-zero.
+
 ## Later
 
 - `WorkingPatch` spawns one `git diff --no-index` per untracked file (up to 200). Fine on

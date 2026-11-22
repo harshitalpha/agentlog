@@ -29,6 +29,7 @@ type command struct {
 
 // streams bundles the output writers so commands are testable.
 type streams struct {
+	in  io.Reader
 	out io.Writer
 	err io.Writer
 }
@@ -46,7 +47,7 @@ func commands() []command {
 		{"watch", "auto-commit after edits settle (for agents without hooks)",
 			"agentlog watch [path] [--quiet 20] [--interval 2]", stub("watch")},
 		{"hook-session-start", "Claude Code SessionStart hook (plugin use)",
-			"agentlog hook-session-start", stubHook},
+			"agentlog hook-session-start", hookSessionStart},
 		{"hook-stop", "Claude Code Stop hook (plugin use)",
 			"agentlog hook-stop", stubHook},
 		{"uninstall", "remove standalone hooks and rules from a repo",
@@ -77,7 +78,7 @@ func usageText() string {
 // Run executes the CLI and returns the process exit code
 // (0 success, 1 runtime error, 2 usage error).
 func Run(args []string) int {
-	return run(args, streams{out: os.Stdout, err: os.Stderr})
+	return run(args, streams{in: os.Stdin, out: os.Stdout, err: os.Stderr})
 }
 
 func run(args []string, s streams) int {
