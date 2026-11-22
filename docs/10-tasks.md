@@ -68,7 +68,7 @@ Work top to bottom. Tick each box only when its acceptance criteria pass. Commit
 ## M6: Tests, docs, release
 
 - [x] **T6.1 Playwright e2e.** Every scenario in `09-testing.md` §4. `make e2e` green.
-- [ ] **T6.2 CI.** `.github/workflows/ci.yml` (check + e2e) and `release.yml` (tag → `make dist` → push the `release` branch).
+- [x] **T6.2 CI.** `.github/workflows/ci.yml` (check + e2e) and `release.yml` (tag → `make dist` → push the `release` branch).
 - [ ] **T6.3 README.md.** Install via `/plugin marketplace add` + `/plugin install`, quickstart (`/agentlog:init`, work, `/agentlog:ui`),
   how enforcement and opt-in work, the `enforce_everywhere` option, standalone install, other agents (+ `watch`),
   Windows note, uninstall and disable, FAQ ("Will this push my code?" No. "Will it block Claude in my other repos?" No, unless you enable them), screenshot.

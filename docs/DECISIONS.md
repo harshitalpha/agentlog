@@ -262,6 +262,17 @@ reference and marketplace reference. Everything in the spec still holds except t
   (`Received: 300`, limit 70), so the colgroup regression is covered.
 - `make e2e` runs the unit specs and the browser specs (41 tests, about 1.5 minutes).
 
+## CI (T6.2)
+
+- `ci.yml`: `make check` on Ubuntu and macOS (includes the plugin layout and launcher checks) and `make e2e`
+  on Ubuntu with Chromium. `release.yml`: on tag `v*` it requires the tag to equal the `plugin.json`
+  version, runs `make check dist`, then force-pushes source plus `plugin/scripts/dist/` to the `release`
+  branch (the marketplace entry installs from there).
+- **No `claude plugin validate` in CI:** the spec allows this when the `claude` CLI is not available on the
+  runner, and it is not installed there by default. It stays a release-checklist item (`make validate`).
+- The workflows cannot be run locally; their YAML was parsed but they are untested until the first push.
+  Watch the first CI run (macOS `sed`/`mktemp` use in `scripts/check-plugin.sh`, Playwright install).
+
 ## Later
 
 - `WorkingPatch` spawns one `git diff --no-index` per untracked file (up to 200). Fine on

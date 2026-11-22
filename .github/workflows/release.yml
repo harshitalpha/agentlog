@@ -1,0 +1,40 @@
+name: release
+
+# Tag vX.Y.Z -> build all platforms -> publish source + prebuilt binaries on the `release` branch,
+# which is what the marketplace entry installs from (docs/11-plugin-packaging.md section 5/6).
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      - name: Tag must match the plugin version
+        run: |
+          version=$(sed -n 's/.*"version": *"\([^"]*\)".*/\1/p' plugin/.claude-plugin/plugin.json | head -1)
+          if [ "v$version" != "$GITHUB_REF_NAME" ]; then
+            echo "tag $GITHUB_REF_NAME does not match plugin.json version v$version" >&2
+            exit 1
+          fi
+
+      - run: make check dist
+
+      - name: Publish the release branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -B release
+          git add -f plugin/scripts/dist
+          git commit -m "Release $GITHUB_REF_NAME"
+          git push --force origin release
