@@ -63,8 +63,9 @@ func TestEveryCommandHasHelp(t *testing.T) {
 func TestStubsDispatch(t *testing.T) {
 	for _, c := range commands() {
 		code, _, errOut := runCapture(c.name)
-		if c.name == "init" {
-			continue // implemented; see init_test.go
+		switch c.name {
+		case "init", "disable", "status":
+			continue // implemented; see their own tests
 		}
 		if strings.HasPrefix(c.name, "hook-") {
 			if code != 0 {
