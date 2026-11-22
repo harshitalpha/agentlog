@@ -4,7 +4,7 @@ Work top to bottom. Tick each box only when its acceptance criteria pass. Commit
 
 ## M0: Scaffold
 
-- [ ] **T0.1 Project skeleton.** The layout from `03-project-structure.md` (empty packages with doc
+- [x] **T0.1 Project skeleton.** The layout from `03-project-structure.md` (empty packages with doc
   comments, empty `plugin/` folders), `go.mod` (Go 1.22), `.gitignore`, and the Makefile with `build`, `check`, `install`.
   *Accept:* `make build && make check` pass. `bin/agentlog --version` prints `0.1.0`.
 - [ ] **T0.2 CLI dispatch.** `cli.Run` with every subcommand from `04-cli.md` as a stub, `--help` text, and exit codes.
