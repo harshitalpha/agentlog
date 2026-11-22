@@ -53,7 +53,7 @@ Work top to bottom. Tick each box only when its acceptance criteria pass. Commit
 
 ## M5: Plugin packaging
 
-- [ ] **T5.1 Re-read the plugin docs.** Check `11-plugin-packaging.md` against the current Claude Code plugin docs
+- [x] **T5.1 Re-read the plugin docs.** Check `11-plugin-packaging.md` against the current Claude Code plugin docs
   (manifest reference, components, hooks reference for the SessionStart output, marketplace reference for
   `git-subdir` + `ref`). Record any differences in `DECISIONS.md` and follow the docs.
 - [ ] **T5.2 Plugin shell.** `plugin.json`, `hooks/hooks.json`, launcher (executable bit), `assets/icon.png`

@@ -214,6 +214,26 @@ ever run inside a repo. Verified: a full `go test ./...` leaves HEAD, status and
 - **Polling:** one request chain at a time (a slow server never gets stacked polls). The live dot goes grey
   after 2 consecutive failures, back to green on the next success.
 
+## Plugin packaging (T5.1, checked against code.claude.com on 2026-11-22)
+
+Compared `docs/11-plugin-packaging.md` and `docs/05-agent-integration.md` §3 with the current manifest
+reference and marketplace reference. Everything in the spec still holds except these points:
+
+- **`${CLAUDE_PROJECT_DIR}` in skills:** the docs say the path variables are *not* in the environment of
+  commands Claude runs through the Bash tool, but are substituted inline in skill bodies. Skills therefore
+  write the literal `${CLAUDE_PROJECT_DIR}` (quoted) instead of `$CLAUDE_PROJECT_DIR`. Verified in T5.6.
+- **`git-subdir` takes `ref`** (and `sha`, a full 40-char commit). `url` accepts the `owner/repo` shorthand,
+  so the marketplace entry in the spec is valid as written. No fallback to a separate plugin repo needed.
+- **`userConfig`:** every option needs `type`, `title` and `description` (the spec has them) and unknown keys
+  inside an option are an error, so none are added. Keys become `CLAUDE_PLUGIN_OPTION_<KEY>` uppercased:
+  `ENFORCE_EVERYWHERE` and `UI_PORT`, which the binary already reads.
+- **Extra directory-listing fields exist** (`privacyPolicyUrl`, `termsOfServiceUrl`). The plugin sets
+  `privacyPolicyUrl` as the spec recommends, in `plugin.json` only (a marketplace entry would warn).
+- **`engines` is not set:** it needs Claude Code v2.1.323+ and older versions reject the manifest.
+- **Names:** `agentlog` is neither a reserved plugin nor marketplace name.
+- **Hooks:** the file keeps the `"hooks"` wrapper and the quoted `"${CLAUDE_PLUGIN_ROOT}"` shell form.
+- **Windows:** PowerShell-only machines are unsupported in v1 (launcher is POSIX sh; Git Bash works).
+
 ## Later
 
 - `WorkingPatch` spawns one `git diff --no-index` per untracked file (up to 200). Fine on
