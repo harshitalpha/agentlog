@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/OWNER/agentlog/internal/gitx"
+	"github.com/harshitalpha/agentlog/internal/gitx"
 )
 
 func TestMain(m *testing.M) {

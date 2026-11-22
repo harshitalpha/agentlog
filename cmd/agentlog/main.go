@@ -5,7 +5,7 @@ package main
 import (
 	"os"
 
-	"github.com/OWNER/agentlog/internal/cli"
+	"github.com/harshitalpha/agentlog/internal/cli"
 )
 
 // version is overridden at build time with -ldflags "-X main.version=…".

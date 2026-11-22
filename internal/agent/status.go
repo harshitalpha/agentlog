@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/OWNER/agentlog/internal/gitx"
+	"github.com/harshitalpha/agentlog/internal/gitx"
 )
 
 // How a repo came to be enabled.

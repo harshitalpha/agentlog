@@ -9,9 +9,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/OWNER/agentlog/internal/gitx"
+	"github.com/harshitalpha/agentlog/internal/gitx"
 
-	"github.com/OWNER/agentlog/internal/agent"
+	"github.com/harshitalpha/agentlog/internal/agent"
 )
 
 // moduleRoot is the repository root, found from this file's location (the

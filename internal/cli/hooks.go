@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/OWNER/agentlog/internal/agent"
+	"github.com/harshitalpha/agentlog/internal/agent"
 )
 
 // maxHookInput bounds how much stdin a hook reads.

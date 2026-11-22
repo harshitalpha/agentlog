@@ -8,7 +8,7 @@ bin="$DIR/dist/agentlog-$os-$arch"; [ "$os" = windows ] && bin="$bin.exe"
 if [ ! -x "$bin" ]; then
   # Never break Claude: hooks must exit 0 even when no binary fits this platform.
   case "$1" in hook-*) cat >/dev/null; exit 0 ;; esac
-  echo "agentlog: no prebuilt binary for $os-$arch. Install with: go install github.com/OWNER/agentlog/cmd/agentlog@latest" >&2
+  echo "agentlog: no prebuilt binary for $os-$arch. Install with: go install github.com/harshitalpha/agentlog/cmd/agentlog@latest" >&2
   command -v agentlog >/dev/null 2>&1 && exec agentlog "$@"
   exit 1
 fi

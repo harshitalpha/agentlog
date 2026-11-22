@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/OWNER/agentlog/internal/gitx"
+	"github.com/harshitalpha/agentlog/internal/gitx"
 )
 
 // lockTTL is how long a hook invocation shadows an identical one. It dedupes

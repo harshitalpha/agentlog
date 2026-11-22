@@ -18,7 +18,7 @@ session like a story instead of one giant `git diff`.
 In Claude Code:
 
 ```
-/plugin marketplace add OWNER/agentlog
+/plugin marketplace add harshitalpha/agentlog
 /plugin install agentlog@agentlog
 ```
 
@@ -73,7 +73,7 @@ read-only, listens on `127.0.0.1` only and rejects requests with a foreign `Host
 ## Standalone use (no plugin)
 
 ```
-go install github.com/OWNER/agentlog/cmd/agentlog@latest
+go install github.com/harshitalpha/agentlog/cmd/agentlog@latest
 cd your-project
 agentlog init --standalone-hook   # also installs the Claude Code hooks in .claude/settings.local.json
 agentlog ui                       # opens the timeline in your browser

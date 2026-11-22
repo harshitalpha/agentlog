@@ -13,7 +13,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/OWNER/agentlog/internal/gitx"
+	"github.com/harshitalpha/agentlog/internal/gitx"
 )
 
 var (

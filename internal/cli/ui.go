@@ -9,9 +9,9 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/OWNER/agentlog/internal/gitx"
-	"github.com/OWNER/agentlog/internal/server"
-	"github.com/OWNER/agentlog/internal/uiproc"
+	"github.com/harshitalpha/agentlog/internal/gitx"
+	"github.com/harshitalpha/agentlog/internal/server"
+	"github.com/harshitalpha/agentlog/internal/uiproc"
 )
 
 // envUIPort is how Claude Code passes the plugin's ui_port option to the binary.

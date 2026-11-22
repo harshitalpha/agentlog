@@ -4,7 +4,7 @@ import (
 	"flag"
 	"fmt"
 
-	"github.com/OWNER/agentlog/internal/agent"
+	"github.com/harshitalpha/agentlog/internal/agent"
 )
 
 func disableCmd(args []string, s streams) int {

@@ -14,8 +14,8 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/OWNER/agentlog/internal/gitx"
-	"github.com/OWNER/agentlog/web"
+	"github.com/harshitalpha/agentlog/internal/gitx"
+	"github.com/harshitalpha/agentlog/web"
 )
 
 // Defaults from docs/04-cli.md and docs/07-http-api.md.

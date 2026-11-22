@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/OWNER/agentlog/internal/agent"
+	"github.com/harshitalpha/agentlog/internal/agent"
 )
 
 func watchCmd(args []string, s streams) int {

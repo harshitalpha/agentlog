@@ -4,7 +4,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/OWNER/agentlog/internal/gitx"
+	"github.com/harshitalpha/agentlog/internal/gitx"
 )
 
 // Names shared with the CLI and plugin manifest.

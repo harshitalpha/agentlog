@@ -1,3 +1,3 @@
-module github.com/OWNER/agentlog
+module github.com/harshitalpha/agentlog
 
 go 1.22

@@ -10,7 +10,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/OWNER/agentlog/internal/gitx"
+	"github.com/harshitalpha/agentlog/internal/gitx"
 )
 
 // Listening, serving over real HTTP and the idle timeout.

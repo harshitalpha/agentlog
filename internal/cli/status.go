@@ -6,9 +6,9 @@ import (
 	"flag"
 	"fmt"
 
-	"github.com/OWNER/agentlog/internal/agent"
-	"github.com/OWNER/agentlog/internal/gitx"
-	"github.com/OWNER/agentlog/internal/uiproc"
+	"github.com/harshitalpha/agentlog/internal/agent"
+	"github.com/harshitalpha/agentlog/internal/gitx"
+	"github.com/harshitalpha/agentlog/internal/uiproc"
 )
 
 // openRepoArg resolves [path] to a repo, printing the standard error.

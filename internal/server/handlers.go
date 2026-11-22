@@ -13,8 +13,8 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/OWNER/agentlog/internal/agent"
-	"github.com/OWNER/agentlog/internal/gitx"
+	"github.com/harshitalpha/agentlog/internal/agent"
+	"github.com/harshitalpha/agentlog/internal/gitx"
 )
 
 // Limits (docs/07-http-api.md).

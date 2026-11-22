@@ -6,7 +6,7 @@ clickable timeline with diffs. Nothing is pushed, and no data leaves your machin
 ## Install
 
 ```
-/plugin marketplace add OWNER/agentlog
+/plugin marketplace add harshitalpha/agentlog
 /plugin install agentlog@agentlog
 ```
 
@@ -27,4 +27,4 @@ agentlog only acts in repos where you ran `/agentlog:init`, unless you turn on t
 Prebuilt binaries: macOS (arm64, amd64), Linux (arm64, amd64), Windows (amd64, needs Git Bash
 for the hooks). PowerShell-only Windows is not supported in v1.
 
-Full documentation: https://github.com/OWNER/agentlog#readme
+Full documentation: https://github.com/harshitalpha/agentlog#readme

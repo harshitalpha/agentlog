@@ -14,7 +14,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/OWNER/agentlog/internal/gitx"
+	"github.com/harshitalpha/agentlog/internal/gitx"
 )
 
 // File names inside .git/agentlog/.

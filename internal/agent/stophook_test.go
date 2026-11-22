@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/OWNER/agentlog/internal/gitx"
+	"github.com/harshitalpha/agentlog/internal/gitx"
 )
 
 func stopInput(t *testing.T, cwd string, active bool) []byte {

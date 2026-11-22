@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/OWNER/agentlog/internal/gitx"
+	"github.com/harshitalpha/agentlog/internal/gitx"
 )
 
 // safeBuf is a bytes.Buffer that is safe to read while Watch writes to it.

@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/OWNER/agentlog/internal/gitx"
+	"github.com/harshitalpha/agentlog/internal/gitx"
 )
 
 // project makes a plain (non-git) folder with a few files.
