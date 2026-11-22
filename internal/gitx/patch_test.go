@@ -263,3 +263,37 @@ func TestCommitPatchUnknownCommit(t *testing.T) {
 		t.Errorf("short hash: %v", err)
 	}
 }
+
+// The patch format must not depend on the user's diff config.
+func TestPatchesIgnoreUserDiffConfig(t *testing.T) {
+	r := newRepo(t)
+	commitFile(t, r, "dir/a.txt", "one\n", "First", "")
+	write(t, r, "dir/a.txt", "one\ntwo\n")
+	write(t, r, "dir/new.txt", "n\n")
+	for k, v := range map[string]string{
+		"diff.noprefix": "true", "diff.mnemonicPrefix": "true", "diff.external": "/nonexistent/diff-tool",
+	} {
+		if err := r.SetLocal(k, v); err != nil {
+			t.Fatal(err)
+		}
+	}
+	work, err := r.WorkingPatch()
+	if err != nil {
+		t.Fatal(err)
+	}
+	mustContain(t, work, "diff --git a/dir/a.txt b/dir/a.txt", "diff --git a/dir/new.txt b/dir/new.txt",
+		"--- a/dir/a.txt", "+++ b/dir/a.txt", "+two")
+	git(t, r, "add", "-A")
+	git(t, r, "commit", "-q", "-m", "Second")
+	head, _ := r.Head()
+	commit, err := r.CommitPatch(head)
+	if err != nil {
+		t.Fatal(err)
+	}
+	mustContain(t, commit, "diff --git a/dir/a.txt b/dir/a.txt", "diff --git a/dir/new.txt b/dir/new.txt")
+	for _, bad := range []string{"diff --git i/", "diff --git c/", "diff --git w/", " w/dir"} {
+		if strings.Contains(work+commit, bad) {
+			t.Errorf("patch contains %q", bad)
+		}
+	}
+}

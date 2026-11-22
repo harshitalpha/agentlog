@@ -16,6 +16,12 @@ const (
 	maxUntrackedBytes = 1 << 20 // 1 MB
 )
 
+// diffFlags pin the patch format so the UI's parser sees the same headers on
+// every machine, whatever the user's git config says: no external diff or
+// textconv programs, and a/ and b/ prefixes even if diff.noprefix or
+// diff.mnemonicPrefix (which yields i/, w/, c/) is set.
+var diffFlags = []string{"--no-ext-diff", "--no-textconv", "--src-prefix=a/", "--dst-prefix=b/"}
+
 // CommitPatch returns the unified patch of one commit against its first
 // parent (root commits show every file as added). An unknown commit returns
 // ErrNotFound.
@@ -25,8 +31,8 @@ func (r *Repo) CommitPatch(hash string) (string, error) {
 	} else if code != 0 {
 		return "", ErrNotFound
 	}
-	return r.run("show", "--format=", "--patch", "-M", "--no-color", "--first-parent",
-		"--no-ext-diff", "--end-of-options", hash)
+	args := append([]string{"show", "--format=", "--patch", "-M", "--no-color", "--first-parent"}, diffFlags...)
+	return r.run(append(args, "--end-of-options", hash)...)
 }
 
 // WorkingPatch returns the unified patch of everything uncommitted: tracked
@@ -38,7 +44,8 @@ func (r *Repo) WorkingPatch() (string, error) {
 	if r.HasCommits() {
 		base = "HEAD"
 	}
-	patch, err := r.run("diff", base, "--patch", "-M", "--no-color", "--no-ext-diff")
+	args := append([]string{"diff", base, "--patch", "-M", "--no-color"}, diffFlags...)
+	patch, err := r.run(args...)
 	if err != nil {
 		return "", err
 	}
@@ -62,8 +69,8 @@ func (r *Repo) WorkingPatch() (string, error) {
 			continue
 		}
 		// `diff --no-index` exits 1 when the files differ; that is success here.
-		text, code, err := r.runCode("diff", "--no-index", "--no-color", "--no-ext-diff",
-			"--", "/dev/null", f)
+		args := append([]string{"diff", "--no-index", "--no-color"}, diffFlags...)
+		text, code, err := r.runCode(append(args, "--", "/dev/null", f)...)
 		if err != nil {
 			return "", err
 		}
