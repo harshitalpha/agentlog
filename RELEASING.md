@@ -51,7 +51,7 @@ nobody receives an update). `make dist` takes its version from `plugin.json`.
 ## 4. Publish
 
 ```sh
-git push origin main            # you push; the build agent never does
+git push origin master            # you push; the build agent never does
 git tag v0.1.0                  # must equal "v" + the plugin.json version
 git push origin v0.1.0
 ```

@@ -11,7 +11,7 @@
   "icon": "./assets/icon.png",
   "documentationUrl": "https://github.com/harshitalpha/agentlog#readme",
   "supportUrl": "https://github.com/harshitalpha/agentlog/issues",
-  "privacyPolicyUrl": "https://github.com/harshitalpha/agentlog/blob/main/PRIVACY.md",
+  "privacyPolicyUrl": "https://github.com/harshitalpha/agentlog/blob/master/PRIVACY.md",
   "userConfig": {
     "enforce_everywhere": {
       "type": "boolean",

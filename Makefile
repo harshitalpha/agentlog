@@ -27,7 +27,7 @@ check:
 install:
 	go install -ldflags "$(LDFLAGS)" ./cmd/agentlog
 
-# All five platforms, for the release (binaries are gitignored on main).
+# All five platforms, for the release (binaries are gitignored on master).
 dist:
 	@mkdir -p $(DIST_DIR)
 	@for p in $(PLATFORMS); do os=$${p%/*}; arch=$${p#*/}; ext=; [ $$os = windows ] && ext=.exe; \
