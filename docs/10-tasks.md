@@ -28,7 +28,7 @@ Work top to bottom. Tick each box only when its acceptance criteria pass. Commit
 - [x] **T2.5 Detection.** `DetectAgent` table tests.
 - [x] **T2.6 `agentlog init`.** All 10 steps, idempotent.
 - [x] **T2.7 `agentlog disable` and `agentlog status`** (incl. `--json`).
-- [ ] **T2.8 Standalone mode.** `init --standalone-hook`, `uninstall`, settings merge, session-lock dedupe.
+- [x] **T2.8 Standalone mode.** `init --standalone-hook`, `uninstall`, settings merge, session-lock dedupe.
 - [ ] **T2.9 `agentlog watch`.**
 - [x] **T2.10 Scripts.** `fake-claude-stop.sh`, `fake-session-start.sh`, `make-demo-repo.sh` (`09-testing.md` §3).
   *Accept (M2):* the demo repo has exactly the expected history, and the "not enabled + dirty → silent" test passes.

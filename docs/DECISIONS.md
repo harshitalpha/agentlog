@@ -76,7 +76,6 @@ Choices made where the spec was ambiguous or the real world disagreed. Newest la
   so `cli/args.go` re-parses around it.
 - **Init commits are signed per the user's own git config** (they are the user's commits). Only
   auto-commits force signing off.
-- `--standalone-hook` returns "not implemented yet" until T2.8.
 
 ## Status and disable (M2)
 
@@ -88,6 +87,25 @@ Choices made where the spec was ambiguous or the real world disagreed. Newest la
   has_baseline, commits_since_baseline{agent,human,auto}, uncommitted_files, ui_url`.
 - **`runningUIURL` and `stopRunningUI`** in `cli/status.go` are placeholders for `uiproc`; they are
   wired in T3.4 (status shows the URL, disable stops the server).
+
+## Standalone mode and hook dedupe (M2)
+
+- **Lock key includes `stop_hook_active`:** `.git/agentlog/stop-<session>-<0|1>`. The spec's literal
+  `stop-<session_id>` with a 5 s TTL would swallow Claude's genuine second Stop attempt when it
+  arrives within 5 s of the first (a fast "ok" reply), skipping the auto-commit safety net.
+  Identical duplicate invocations (plugin + standalone) share the key; the real second attempt does
+  not. Tested both ways.
+- **SessionStart is deduped too** (`start-<session>`), so the rules aren't injected twice when both
+  the plugin and the standalone hooks are present. Locks are only created after the enabled check,
+  so repos that never opted in never get a `.git/agentlog` directory.
+- **Session ids are sanitised** (`[A-Za-z0-9_-]`, max 64 chars) before becoming file names. Locks are
+  created with `O_EXCL`; stale `stop-*`/`start-*` files (>1 min) are swept, never other files.
+- **Settings merge re-serialises JSON** (2-space indent, keys sorted), so formatting and key order of
+  `settings.local.json` may change. Values are preserved exactly (numbers use `json.Number`); all
+  other keys and hooks are kept. Invalid JSON is never touched; `init` prints a ready-to-paste snippet.
+- **`uninstall` deletes `settings.local.json` if it ends up `{}`** (and the `.claude` dir if empty).
+- **`gitx.Repo.GitPath`** resolves paths inside the git dir with `rev-parse --git-path`, so linked
+  worktrees put `agentlog/` state in the shared git dir.
 
 ## Later
 
