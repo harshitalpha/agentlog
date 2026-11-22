@@ -59,7 +59,7 @@ Work top to bottom. Tick each box only when its acceptance criteria pass. Commit
 - [x] **T5.2 Plugin shell.** `plugin.json`, `hooks/hooks.json`, launcher (executable bit), `assets/icon.png`
   (simple and original, a timeline/commit motif; don't use Anthropic or Claude branding), `plugin/README.md`, `LICENSE`.
 - [x] **T5.3 Skills.** `init`, `ui`, `disable`, `status` SKILL.md files per `11-plugin-packaging.md` §7.
-- [ ] **T5.4 Build targets.** `make dist`, `make dist-local`, `make validate`. The launcher test from `09-testing.md` §5.
+- [x] **T5.4 Build targets.** `make dist`, `make dist-local`, `make validate`. The launcher test from `09-testing.md` §5.
 - [ ] **T5.5 Marketplace file.** Root `.claude-plugin/marketplace.json`.
 - [ ] **T5.6 Local plugin run.** `make dist-local && claude --plugin-dir ./plugin`: walk through the plugin items of the manual checklist.
   *Accept (M5):* `make validate` passes (`--strict`). All 4 skills work in a real Claude Code session. The Stop hook
