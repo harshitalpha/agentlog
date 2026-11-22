@@ -62,15 +62,12 @@ func TestEveryCommandHasHelp(t *testing.T) {
 
 func TestStubsDispatch(t *testing.T) {
 	for _, c := range commands() {
-		code, out, errOut := runCapture(c.name)
-		if c.name == "hook-session-start" {
-			continue // implemented; covered in hooks_test.go
-		}
+		code, _, errOut := runCapture(c.name)
 		if strings.HasPrefix(c.name, "hook-") {
-			if code != 0 || out != "" || errOut != "" {
-				t.Errorf("%s must exit 0 silently, got code=%d out=%q err=%q", c.name, code, out, errOut)
+			if code != 0 {
+				t.Errorf("%s must always exit 0, got %d", c.name, code)
 			}
-			continue
+			continue // implemented; behaviour is covered in hooks_test.go
 		}
 		if code != 1 || !strings.Contains(errOut, c.name+" is not implemented") {
 			t.Errorf("%s: code=%d err=%q", c.name, code, errOut)

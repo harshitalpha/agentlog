@@ -81,3 +81,37 @@ func TestHookSessionStartHintInNonEnabledRepo(t *testing.T) {
 		t.Fatalf("code=%d out=%q", code, out)
 	}
 }
+
+func TestHookStopThroughCLI(t *testing.T) {
+	dir := gitRepo(t)
+	for _, kv := range [][2]string{{"agentlog.enabled", "true"}, {"user.name", "T"}, {"user.email", "t@x"}, {"commit.gpgsign", "false"}} {
+		if out, err := exec.Command("git", "-C", dir, "config", "--local", kv[0], kv[1]).CombinedOutput(); err != nil {
+			t.Fatalf("%v\n%s", err, out)
+		}
+	}
+	if err := os.WriteFile(dir+"/a.txt", []byte("x\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	code, out, errOut := runWithStdin(`{"cwd":"`+dir+`","stop_hook_active":false}`, "hook-stop")
+	if code != 0 || errOut != "" || !strings.Contains(out, `"decision":"block"`) || strings.Count(out, "\n") != 1 {
+		t.Fatalf("code=%d out=%q err=%q", code, out, errOut)
+	}
+	code, out, _ = runWithStdin(`{"cwd":"`+dir+`","stop_hook_active":true}`, "hook-stop")
+	if code != 0 || out != "" {
+		t.Fatalf("second attempt: code=%d out=%q", code, out)
+	}
+	log, _ := exec.Command("git", "-C", dir, "log", "--format=%an|%s").Output()
+	if strings.TrimSpace(string(log)) != "agentlog|[auto] uncommitted changes: a.txt" {
+		t.Fatalf("log = %q", log)
+	}
+}
+
+func TestHookStopNeverNoisyOnBadInput(t *testing.T) {
+	for _, in := range []string{"", "{bad", `{"cwd":"/nope"}`} {
+		code, out, errOut := runWithStdin(in, "hook-stop")
+		if code != 0 || errOut != "" {
+			t.Errorf("input %q: code=%d err=%q", in, code, errOut)
+		}
+		_ = out
+	}
+}

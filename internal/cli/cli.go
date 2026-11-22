@@ -49,7 +49,7 @@ func commands() []command {
 		{"hook-session-start", "Claude Code SessionStart hook (plugin use)",
 			"agentlog hook-session-start", hookSessionStart},
 		{"hook-stop", "Claude Code Stop hook (plugin use)",
-			"agentlog hook-stop", stubHook},
+			"agentlog hook-stop", hookStop},
 		{"uninstall", "remove standalone hooks and rules from a repo",
 			"agentlog uninstall [path]", stub("uninstall")},
 	}
@@ -62,9 +62,6 @@ func stub(name string) func([]string, streams) int {
 		return exitError
 	}
 }
-
-// stubHook honours the hook contract: always exit 0, no output.
-func stubHook(_ []string, _ streams) int { return exitOK }
 
 func usageText() string {
 	text := "agentlog: make AI coding agents commit locally, then browse the history.\n\n" +
