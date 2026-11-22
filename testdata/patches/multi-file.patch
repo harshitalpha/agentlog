@@ -1,0 +1,32 @@
+diff --git a/after.txt b/moved.txt
+similarity index 100%
+rename from after.txt
+rename to moved.txt
+diff --git a/multi-new.txt b/multi-new.txt
+new file mode 100644
+index 0000000..d5a09df
+--- /dev/null
++++ b/multi-new.txt
+@@ -0,0 +1 @@
++brand new
+diff --git a/multi.bin b/multi.bin
+new file mode 100644
+index 0000000..bdc955b
+Binary files /dev/null and b/multi.bin differ
+diff --git a/new-name.txt b/new-name.txt
+deleted file mode 100644
+index 7a28df3..0000000
+--- a/new-name.txt
++++ /dev/null
+@@ -1,4 +0,0 @@
+-alpha
+-beta
+-gamma
+-delta
+diff --git a/one.txt b/one.txt
+index 3e75765..e699add 100644
+--- a/one.txt
++++ b/one.txt
+@@ -1 +1,2 @@
+ new
++line 3 changed

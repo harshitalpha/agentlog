@@ -1,0 +1,15 @@
+diff --git a/before.txt b/after.txt
+similarity index 67%
+rename from before.txt
+rename to after.txt
+index a52ef27..013b8b2 100644
+--- a/before.txt
++++ b/after.txt
+@@ -1,6 +1,6 @@
+ l1
+ l2
+-l3
++l3 edited
+ l4
+ l5
+ l6

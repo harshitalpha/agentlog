@@ -191,6 +191,17 @@ ever run inside a repo. Verified: a full `go test ./...` leaves HEAD, status and
   a local, git-ignored symlink to an existing Playwright 1.65.0 install in another project on this
   machine, and the tests are run with `node e2e/node_modules/@playwright/test/cli.js` instead of `npx`.
   On a normal machine `npm install` in `e2e/` produces the same layout.
+- **Patch flags are pinned (T4.2):** `CommitPatch`, `WorkingPatch` and the untracked `diff --no-index`
+  call pass `--no-ext-diff --no-textconv --src-prefix=a/ --dst-prefix=b/`. Without them a user's
+  `diff.noprefix`, `diff.mnemonicPrefix` or `diff.external` changes the patch shape and breaks the parser.
+  `TestPatchesIgnoreUserDiffConfig` covers it.
+- **Parser fixtures are real git output:** `testdata/patches/generate.sh` builds a scratch repo and writes
+  the 17 `.patch` files, so they can be regenerated. `e2e/tests/diff.unit.spec.ts` fails if a patch has no
+  expectation. `parsePatch` (in `web/static/diff.js`, no DOM) uses the hunk header counts to decide when
+  a hunk ends, so in-hunk lines like `--- sql comment` stay content. Paths come from `rename from/to`
+  and `---`/`+++` (trailing tab stripped), with the `diff --git` line only as fallback.
+- **`stripTrailers` is case-insensitive** (like the prototype) and only removes `Agent:`,
+  `Co-Authored-By:`, `Claude-Session:` and `Signed-off-by:` lines.
 
 ## Later
 

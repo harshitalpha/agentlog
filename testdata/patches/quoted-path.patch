@@ -1,0 +1,14 @@
+diff --git "a/quote\"name.txt" "b/quote\"name.txt"
+new file mode 100644
+index 0000000..bca70f3
+--- /dev/null
++++ "b/quote\"name.txt"
+@@ -0,0 +1 @@
++q
+diff --git "a/tab\there.txt" "b/tab\there.txt"
+new file mode 100644
+index 0000000..bca70f3
+--- /dev/null
++++ "b/tab\there.txt"
+@@ -0,0 +1 @@
++q

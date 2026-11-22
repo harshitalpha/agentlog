@@ -1,0 +1,8 @@
+diff --git a/hello.txt b/hello.txt
+deleted file mode 100644
+index 94954ab..0000000
+--- a/hello.txt
++++ /dev/null
+@@ -1,2 +0,0 @@
+-hello
+-world
