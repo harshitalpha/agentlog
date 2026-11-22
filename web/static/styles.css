@@ -145,3 +145,14 @@ table.diff { width: 100%; border-collapse: collapse; table-layout: fixed; font: 
 .diff tr.del td.c::before { content: "−"; color: var(--del); margin-right: 6px; }
 .diff tr.ctx td.c::before { content: " "; margin-right: 6px; }
 .diff tr.hunk td { padding: 3px 10px; background: var(--hunk); color: var(--hunk-text); white-space: pre-wrap; }
+
+/* ---- view-file modal --------------------------------------------------- */
+.modal { position: fixed; inset: 0; z-index: 10; display: flex; align-items: center; justify-content: center; background: rgba(0, 0, 0, .6); }
+.m-box {
+  width: min(1100px, 92vw); height: 86vh; display: flex; flex-direction: column; overflow: hidden;
+  background: var(--panel); border: 1px solid var(--line); border-radius: 10px;
+}
+.m-head { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-bottom: 1px solid var(--line); font: 13px var(--mono); }
+.m-head span { flex: 1; min-width: 0; color: var(--dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.m-body { flex: 1; overflow: auto; }
+.file-view td.c::before { content: none; }

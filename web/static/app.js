@@ -3,7 +3,7 @@
 import { buildRows } from './util.js';
 import { parsePatch } from './diff.js';
 import { renderTimeline } from './render.js';
-import { renderDetail, renderLoading, renderError, renderPlaceholder } from './detail.js';
+import { renderDetail, renderLoading, renderError, renderPlaceholder, renderFileView, renderModalMessage } from './detail.js';
 
 const $ = (selector) => document.querySelector(selector);
 
@@ -93,14 +93,46 @@ async function refresh(first) {
   else if (state.selected === 'WORKING') showDetail({ keepScroll: true });
 }
 
+let modalToken = 0;
+let modalOpener = null;
+
+async function openModal(hash, path) {
+  const token = ++modalToken;
+  modalOpener = document.activeElement;
+  $('#modalTitle').textContent = `${path} @ ${hash === 'WORKING' ? 'working tree' : hash.slice(0, 8)}`;
+  renderModalMessage($('#modalBody'), 'Loading…');
+  $('#modal').hidden = false;
+  $('#modalClose').focus();
+  try {
+    const res = await getJSON(`/api/file?hash=${encodeURIComponent(hash)}&path=${encodeURIComponent(path)}`);
+    if (token === modalToken) renderFileView($('#modalBody'), res);
+  } catch (err) {
+    if (token === modalToken) renderModalMessage($('#modalBody'), `Could not load the file: ${err.message}`);
+  }
+}
+
+function closeModal() {
+  if ($('#modal').hidden) return false;
+  modalToken++; // drop any response still in flight
+  $('#modal').hidden = true;
+  if (modalOpener && document.contains(modalOpener)) modalOpener.focus();
+  return true;
+}
+
+$('#modalClose').addEventListener('click', closeModal);
+$('#modal').addEventListener('click', (e) => { if (e.target.id === 'modal') closeModal(); });
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
+
 $('#detail').addEventListener('click', (e) => {
-  const t = e.target.closest('[data-tog],[data-jump],[data-copy]');
+  const t = e.target.closest('[data-tog],[data-jump],[data-copy],[data-view]');
   if (!t) return;
   if (t.dataset.tog !== undefined) $(`#f${t.dataset.tog}`).classList.toggle('closed');
   else if (t.dataset.jump !== undefined) {
     const card = $(`#f${t.dataset.jump}`);
     card.classList.remove('closed');
     card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  } else if (t.dataset.view) {
+    openModal(t.dataset.hash, t.dataset.view);
   } else if (t.dataset.copy) {
     navigator.clipboard?.writeText(t.dataset.copy).catch(() => {});
     const label = t.textContent;

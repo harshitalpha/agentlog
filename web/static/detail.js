@@ -88,3 +88,19 @@ export function renderDetail(el, row, files, { truncated = false, total = 0 } = 
       baseName(f.path), h('i', { class: 'a', text: `+${f.add}` }), h('i', { class: 'd', text: `−${f.del}` })))),
     files.length ? files.map((f, i) => fileCard(f, i, row.hash)) : h('div', { class: 'bin', text: 'No file changes.' })));
 }
+
+/** Body of the view-file modal: a two-column numbered table (same colgroup approach as the diff). */
+export function renderFileView(el, { content = '', binary = false }) {
+  if (binary) return el.replaceChildren(h('div', { class: 'bin', text: 'Binary file, no preview.' }));
+  if (content === '') return el.replaceChildren(h('div', { class: 'bin', text: 'Empty file.' }));
+  const lines = content.replace(/\n$/, '').split('\n');
+  const col = h('col');
+  const num = h('col');
+  num.style.width = '52px';
+  el.replaceChildren(h('table', { class: 'diff file-view' }, h('colgroup', {}, num, col),
+    h('tbody', {}, lines.map((text, i) => h('tr', { class: 'ctx' }, h('td', { class: 'n', text: i + 1 }), h('td', { class: 'c', text }))))));
+}
+
+export function renderModalMessage(el, text) {
+  el.replaceChildren(h('div', { class: 'bin', text }));
+}

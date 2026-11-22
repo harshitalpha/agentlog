@@ -47,7 +47,7 @@ Work top to bottom. Tick each box only when its acceptance criteria pass. Commit
 - [x] **T4.2 diff.js.** `parsePatch`, `testdata/patches/`, Node unit tests.
 - [x] **T4.3 Timeline.** Day groups, dots, badges, numbering, working-tree item, both orders, empty states.
 - [x] **T4.4 Detail.** Header, trailer stripping, meta, copy hash, chips, file cards, colgroup diff table, collapse, large-file default.
-- [ ] **T4.5 Modal.** View file at a commit or in the working tree.
+- [x] **T4.5 Modal.** View file at a commit or in the working tree.
 - [ ] **T4.6 Behaviour.** Polling, live dot, filter, keyboard, URL-hash deep links, stale-response guard, persisted order.
   *Accept (M4):* compared with `reference/screenshots/`, it looks at least as good, and the diff number columns are narrow.
 
