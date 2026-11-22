@@ -21,7 +21,7 @@ Work top to bottom. Tick each box only when its acceptance criteria pass. Commit
 
 ## M2: Agent logic + CLI commands
 
-- [ ] **T2.1 Rules.** Embed `rules.md`. `UpsertRules` / `RemoveRules` with tests.
+- [x] **T2.1 Rules.** Embed `rules.md`. `UpsertRules` / `RemoveRules` with tests.
 - [ ] **T2.2 Enabled check.** `IsEnabled(repo, env)`: git config or `enforce_everywhere`.
 - [ ] **T2.3 SessionStart hook.** `HandleSessionStart` + `agentlog hook-session-start`.
 - [ ] **T2.4 Stop hook.** `HandleStop` + `agentlog hook-stop`. Enabled check first; never non-zero; JSON-only stdout.
@@ -30,7 +30,7 @@ Work top to bottom. Tick each box only when its acceptance criteria pass. Commit
 - [ ] **T2.7 `agentlog disable` and `agentlog status`** (incl. `--json`).
 - [ ] **T2.8 Standalone mode.** `init --standalone-hook`, `uninstall`, settings merge, session-lock dedupe.
 - [ ] **T2.9 `agentlog watch`.**
-- [ ] **T2.10 Scripts.** `fake-claude-stop.sh`, `fake-session-start.sh`, `make-demo-repo.sh` (`09-testing.md` §3).
+- [x] **T2.10 Scripts.** `fake-claude-stop.sh`, `fake-session-start.sh`, `make-demo-repo.sh` (`09-testing.md` §3).
   *Accept (M2):* the demo repo has exactly the expected history, and the "not enabled + dirty → silent" test passes.
 
 ## M3: HTTP server + UI process
