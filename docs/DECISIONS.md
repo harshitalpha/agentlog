@@ -292,6 +292,32 @@ reference and marketplace reference. Everything in the spec still holds except t
 - Side effect: long-running commands (`watch`, foreground `ui`) no longer die when their stdout reader
   goes away; they run until Ctrl+C/SIGTERM. Acceptable; not worth special-casing.
 
+## Manual acceptance checklist (T6.5, `docs/09-testing.md` §6, run 2026-11-22 with claude 2.1.323)
+
+Real headless Claude Code sessions (`claude -p`) in scratch directories under /tmp, nothing in this repo.
+
+| Item | Result |
+| --- | --- |
+| `make build` makes one binary, `--version` works | pass (`0.1.0`) |
+| Four skills appear and work with `--plugin-dir` | pass (T5.6) |
+| Folder with code, no git: `/agentlog:init` | pass: repo, baseline (`.env` untracked), `.gitignore` lines, `AGENTS.md`, `agentlog.enabled=true` |
+| `init` twice makes no new commit | pass (HEAD unchanged) |
+| Multi-part change ends as several commits, clean tree | pass: three requests became three descriptive commits with `Agent:` trailers, tree clean |
+| Other git repo, init never run: no block, no auto-commit | pass (one turn, nothing written under `.git`) |
+| `/agentlog:ui` twice gives the same URL | pass (one process on 7777) |
+| A fix lands as a new commit, not an amend | pass: 5 to 6 commits, every earlier hash still an ancestor, no amend in the reflog |
+| Story order reads clearly | pass: compared with `reference/screenshots/story-order.png` |
+| "Uncommitted changes" appears and updates live | pass (e2e: count follows new files, disappears once committed) |
+| `curl -H 'Host: evil.com' …/api/repo` gives 403 | pass (also POST gives 405) |
+| `/agentlog:disable` stops enforcement, commits remain | pass |
+| Standalone: `go install` + `init --standalone-hook`, then `uninstall` | pass: block then `[auto]` commit with no plugin loaded; uninstall kept `env` and `permissions` and all commits |
+| Install from the marketplace (release branch) on a clean machine | **not done, needs publishing.** The install mechanics were verified instead: a local marketplace copy (`"source": "./plugin"`) in a throwaway `CLAUDE_CONFIG_DIR` validated, added, installed to the plugin cache with the launcher's exec bit and all five binaries, and the cached launcher ran. Left for `RELEASING.md` §5. |
+
+Found and fixed while doing this: `init` aborted mid-way when its stdout closed (SIGPIPE, see above).
+Observation: Claude follows an explicit "do not run git" over the Stop hook's request, so the second-attempt
+auto-commit is what guarantees a clean tree. A repo-local `AGENTS.md` committed by the agent after `init`
+was killed by SIGPIPE was just a symptom of that bug, not a separate problem.
+
 ## Later
 
 - `WorkingPatch` spawns one `git diff --no-index` per untracked file (up to 200). Fine on

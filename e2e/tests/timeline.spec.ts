@@ -1,4 +1,6 @@
-import { test, expect, open, commitFile } from './fixtures';
+import { writeFileSync } from 'node:fs';
+import path from 'node:path';
+import { test, expect, open, commitFile, commitAll } from './fixtures';
 
 const SUBJECTS = [
   'Uncommitted changes (2 files)',
@@ -183,4 +185,21 @@ test('live update: a new commit appears at the top within 5s, without a reload',
   await expect(top.locator('.num')).toHaveText('#9');
   expect(navigations).toEqual([]);
   await expect(page.locator('.item')).toHaveCount(10);
+});
+
+test('live update: the working-tree item follows uncommitted files and disappears once committed', async ({ page, demo }) => {
+  await open(page, demo.url);
+  const work = page.locator('.item.work .subj');
+  await expect(work).toHaveText('Uncommitted changes (2 files)');
+  await expect(page.locator('.file')).toHaveCount(2); // the working-tree detail is selected on load
+
+  writeFileSync(path.join(demo.dir, 'scratch.txt'), 'new file\n');
+  await expect(work).toHaveText('Uncommitted changes (3 files)', { timeout: 5000 });
+  await expect(page.locator('.file')).toHaveCount(3); // the open detail refreshed too
+
+  commitAll(demo.dir, 'Commit the scratch work');
+  await expect(page.locator('.item.work')).toHaveCount(0, { timeout: 5000 });
+  // The selection moved to the top commit, which is the one we just made.
+  await expect(page.locator('.item.sel .subj')).toHaveText('Commit the scratch work');
+  await expect(page.locator('#detail h1')).toHaveText('Commit the scratch work');
 });

@@ -73,7 +73,7 @@ Work top to bottom. Tick each box only when its acceptance criteria pass. Commit
   how enforcement and opt-in work, the `enforce_everywhere` option, standalone install, other agents (+ `watch`),
   Windows note, uninstall and disable, FAQ ("Will this push my code?" No. "Will it block Claude in my other repos?" No, unless you enable them), screenshot.
 - [x] **T6.4 RELEASING.md.** The checklist from `11-plugin-packaging.md` §9.
-- [ ] **T6.5 Manual checklist.** Walk through `09-testing.md` §6 and record the results in `DECISIONS.md`.
+- [x] **T6.5 Manual checklist.** Walk through `09-testing.md` §6 and record the results in `DECISIONS.md`.
 - [ ] **T6.6 Final review.** No TODOs, `make check e2e validate` green, tree clean.
 
 **Stop here.** Publishing is done by the human (it needs their GitHub and claude.ai accounts):

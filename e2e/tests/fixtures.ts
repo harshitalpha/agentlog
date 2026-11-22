@@ -48,6 +48,14 @@ export function commitFile(dir: string, file: string, content: string, subject: 
   git('commit', '-q', '-m', subject, '-m', 'Agent: Claude');
 }
 
+/** Commits everything in the working tree (like the Stop hook's auto-commit would). */
+export function commitAll(dir: string, subject: string) {
+  const git = (...args: string[]) => execFileSync('git', ['-C', dir, '-c', 'user.name=e2e', '-c', 'user.email=e2e@localhost',
+    '-c', 'commit.gpgsign=false', ...args], { stdio: 'pipe' });
+  git('add', '-A');
+  git('commit', '-q', '-m', subject);
+}
+
 export const DEMO_PORT = 7799;
 
 /**
