@@ -156,3 +156,25 @@ func TestDisableNotARepo(t *testing.T) {
 		t.Fatalf("code=%d err=%q", code, errOut)
 	}
 }
+
+func TestUninstallCommand(t *testing.T) {
+	dir := sessionRepo(t)
+	head, _ := exec.Command("git", "-C", dir, "rev-parse", "HEAD").Output()
+	code, out, errOut := runWithStdin("", "uninstall", dir)
+	if code != 0 || errOut != "" || !strings.Contains(out, "✓ removed agentlog from") || !strings.Contains(out, "(your commits are untouched)") {
+		t.Fatalf("code=%d out=%q err=%q", code, out, errOut)
+	}
+	head2, _ := exec.Command("git", "-C", dir, "rev-parse", "HEAD").Output()
+	if string(head) != string(head2) {
+		t.Fatal("history changed")
+	}
+	if _, err := os.Stat(filepath.Join(dir, "AGENTS.md")); !os.IsNotExist(err) {
+		t.Fatal("AGENTS.md should be gone")
+	}
+	if _, out, _ := runWithStdin("", "status", dir); !strings.Contains(out, "enabled:      no") {
+		t.Fatalf("status after uninstall:\n%s", out)
+	}
+	if code, _, errOut := runWithStdin("", "uninstall", t.TempDir()); code != 1 || !strings.Contains(errOut, "not inside a git repo") {
+		t.Fatalf("non-repo: code=%d err=%q", code, errOut)
+	}
+}

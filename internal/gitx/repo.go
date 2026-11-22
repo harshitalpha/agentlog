@@ -2,6 +2,7 @@ package gitx
 
 import (
 	"os"
+	"path/filepath"
 	"strings"
 )
 
@@ -62,4 +63,21 @@ func (r *Repo) Branch() string {
 		}
 	}
 	return "HEAD"
+}
+
+// GitPath returns the absolute path of rel inside the repo's git directory
+// (e.g. "agentlog" → <repo>/.git/agentlog), correct for worktrees too.
+func (r *Repo) GitPath(rel string) (string, error) {
+	out, err := r.run("rev-parse", "--git-path", rel)
+	if err != nil {
+		return "", err
+	}
+	p := strings.TrimSpace(out)
+	if p == "" {
+		return "", ErrNotRepo
+	}
+	if !filepath.IsAbs(p) {
+		p = filepath.Join(r.Root, p)
+	}
+	return p, nil
 }

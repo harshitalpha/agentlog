@@ -4,6 +4,7 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 )
 
@@ -114,5 +115,31 @@ func TestCommandsRunInRepoRoot(t *testing.T) {
 	r := newRepo(t)
 	if _, err := os.Stat(filepath.Join(r.Root, ".git")); err != nil {
 		t.Fatal(err)
+	}
+}
+
+func TestGitPath(t *testing.T) {
+	r := newRepo(t)
+	p, err := r.GitPath("agentlog")
+	if err != nil {
+		t.Fatal(err)
+	}
+	want, _ := filepath.EvalSymlinks(filepath.Join(r.Root, ".git"))
+	have, _ := filepath.EvalSymlinks(filepath.Dir(p))
+	if have != want || filepath.Base(p) != "agentlog" || !filepath.IsAbs(p) {
+		t.Fatalf("GitPath = %q (git dir %q)", p, want)
+	}
+
+	// A linked worktree keeps its own git dir elsewhere.
+	commitFile(t, r, "a.txt", "1\n", "First", "")
+	wt := filepath.Join(t.TempDir(), "wt")
+	git(t, r, "worktree", "add", "-q", "-b", "other", wt)
+	r2, err := Open(wt)
+	if err != nil {
+		t.Fatal(err)
+	}
+	p2, err := r2.GitPath("agentlog")
+	if err != nil || !filepath.IsAbs(p2) || strings.HasPrefix(p2, wt) {
+		t.Fatalf("worktree GitPath = %q err=%v (must live in the main .git, not the worktree)", p2, err)
 	}
 }

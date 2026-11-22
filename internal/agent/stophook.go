@@ -31,6 +31,9 @@ func HandleStop(stdin []byte, env Env) string {
 	if !IsEnabled(repo, env) { // also false for a nil repo
 		return ""
 	}
+	if !acquireLock(repo, stopLockKey(in)) {
+		return "" // an identical hook (plugin + standalone) is already handling this
+	}
 	files, err := repo.DirtyFiles()
 	if err != nil {
 		LogError(env, "hook-stop: reading status: %v", err)

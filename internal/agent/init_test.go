@@ -265,13 +265,6 @@ func TestInitRefusesHomeDirectory(t *testing.T) {
 	}
 }
 
-func TestInitStandaloneHookNotYetSupported(t *testing.T) {
-	var out bytes.Buffer
-	if _, err := Init(project(t), InitOptions{StandaloneHook: true}, &out); err == nil {
-		t.Fatal("expected a clear error until T2.8")
-	}
-}
-
 // exec_git runs a raw git command in a repo for assertions.
 func exec_git(t *testing.T, r *gitx.Repo, args ...string) (string, error) {
 	t.Helper()
@@ -280,4 +273,90 @@ func exec_git(t *testing.T, r *gitx.Repo, args ...string) (string, error) {
 		t.Fatalf("git %v: %v\n%s", args, err, out)
 	}
 	return out, err
+}
+
+func TestInitStandaloneHook(t *testing.T) {
+	dir := project(t)
+	fake := filepath.Join(t.TempDir(), "bin dir", "agentlog")
+	repo, out := runInit(t, dir, InitOptions{StandaloneHook: true, ExePath: fake})
+	if !strings.Contains(out, "✓ installed Claude Code hooks") {
+		t.Fatalf("output:\n%s", out)
+	}
+	s := load(t, SettingsPath(repo.Root))
+	if got := commandsFor(s, "Stop"); len(got) != 1 || got[0] != `"`+fake+`" hook-stop` {
+		t.Fatalf("Stop = %v", got)
+	}
+	// The machine-specific file must be ignored, never committed.
+	if tracked, _ := exec_git(t, repo, "ls-files"); strings.Contains(tracked, "settings.local.json") {
+		t.Fatalf("settings.local.json was committed:\n%s", tracked)
+	}
+	if files, _ := repo.DirtyFiles(); len(files) != 0 {
+		t.Fatalf("tree not clean: %v", files)
+	}
+	// Re-running keeps one hook and adds no commit.
+	head, _ := repo.Head()
+	runInit(t, dir, InitOptions{StandaloneHook: true, ExePath: fake})
+	head2, _ := repo.Head()
+	s = load(t, SettingsPath(repo.Root))
+	if head != head2 || len(commandsFor(s, "Stop")) != 1 {
+		t.Fatal("second run duplicated hooks or committed")
+	}
+}
+
+func TestInitStandaloneHookInvalidJSONPrintsSnippet(t *testing.T) {
+	dir := project(t)
+	p := filepath.Join(dir, ".claude", "settings.local.json")
+	_ = os.MkdirAll(filepath.Dir(p), 0o755)
+	_ = os.WriteFile(p, []byte("{broken"), 0o644)
+	_, out := runInit(t, dir, InitOptions{StandaloneHook: true, ExePath: "/x/agentlog"})
+	if !strings.Contains(out, "not valid JSON") || !strings.Contains(out, `"hook-stop"`) && !strings.Contains(out, "hook-stop") {
+		t.Fatalf("expected warning with snippet:\n%s", out)
+	}
+	if !strings.Contains(out, "✓ agentlog enabled") {
+		t.Fatal("init must continue after a settings problem")
+	}
+	if b, _ := os.ReadFile(p); string(b) != "{broken" {
+		t.Fatal("invalid file was modified")
+	}
+}
+
+func TestUninstallRemovesEverythingButCommits(t *testing.T) {
+	dir := project(t)
+	userSettings := filepath.Join(dir, ".claude", "settings.local.json")
+	_ = os.MkdirAll(filepath.Dir(userSettings), 0o755)
+	_ = os.WriteFile(userSettings, []byte(`{"env":{"KEEP":"me"}}`), 0o644)
+	// User content already in CLAUDE.md before init.
+	_ = os.WriteFile(filepath.Join(dir, "CLAUDE.md"), []byte("# mine\n"), 0o644)
+
+	repo, _ := runInit(t, dir, InitOptions{StandaloneHook: true, ClaudeMD: true, ExePath: "/x/agentlog"})
+	head, _ := repo.Head()
+
+	var out bytes.Buffer
+	if err := Uninstall(repo, &out); err != nil {
+		t.Fatal(err)
+	}
+	for _, want := range []string{"removed hooks from .claude/settings.local.json", "removed commit rules from AGENTS.md", "removed commit rules from CLAUDE.md"} {
+		if !strings.Contains(out.String(), want) {
+			t.Errorf("output missing %q:\n%s", want, out.String())
+		}
+	}
+	if _, err := os.Stat(filepath.Join(dir, "AGENTS.md")); !os.IsNotExist(err) {
+		t.Fatal("AGENTS.md held only the block and should be deleted")
+	}
+	if b, _ := os.ReadFile(filepath.Join(dir, "CLAUDE.md")); string(b) != "# mine\n" {
+		t.Fatalf("CLAUDE.md = %q, want the user's content back", b)
+	}
+	if s := load(t, userSettings); s["env"].(map[string]any)["KEEP"] != "me" || s["hooks"] != nil {
+		t.Fatalf("settings = %v", s)
+	}
+	if _, ok, _ := repo.GetLocal(ConfigKey); ok {
+		t.Fatal("agentlog.enabled should be unset")
+	}
+	if head2, _ := repo.Head(); head2 != head {
+		t.Fatal("uninstall must never touch commits")
+	}
+	gi, _ := os.ReadFile(filepath.Join(dir, ".gitignore"))
+	if !strings.Contains(string(gi), ".env") {
+		t.Fatal("uninstall must not touch .gitignore")
+	}
 }

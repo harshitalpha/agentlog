@@ -13,10 +13,11 @@ import (
 
 // InitOptions are the flags of `agentlog init`.
 type InitOptions struct {
-	NoAgentsMD     bool // don't write the rules block into AGENTS.md
-	ClaudeMD       bool // also write it into CLAUDE.md
-	NoBaseline     bool // don't commit a baseline snapshot
-	StandaloneHook bool // also install hooks into .claude/settings.local.json
+	NoAgentsMD     bool   // don't write the rules block into AGENTS.md
+	ClaudeMD       bool   // also write it into CLAUDE.md
+	NoBaseline     bool   // don't commit a baseline snapshot
+	StandaloneHook bool   // also install hooks into .claude/settings.local.json
+	ExePath        string // binary path for standalone hooks; "" = this executable
 }
 
 // Commit messages written by init.
@@ -116,7 +117,20 @@ func Init(path string, opts InitOptions, w io.Writer) (*gitx.Repo, error) {
 	}
 
 	if opts.StandaloneHook {
-		return nil, errors.New("--standalone-hook is not implemented yet")
+		exe := opts.ExePath
+		if exe == "" {
+			if exe, err = executablePath(); err != nil {
+				return nil, err
+			}
+		}
+		switch err := InstallStandaloneHooks(repo.Root, exe); {
+		case errors.Is(err, ErrInvalidSettings):
+			fmt.Fprintln(w, settingsWarning(exe))
+		case err != nil:
+			return nil, err
+		default:
+			fmt.Fprintln(w, "✓ installed Claude Code hooks in .claude/settings.local.json")
+		}
 	}
 
 	// Commit only the files init changed, never the user's other edits.
@@ -178,4 +192,42 @@ func ensureGitignore(root string) (changed bool, err error) {
 	}
 	text += strings.Join(missing, "\n") + "\n"
 	return true, os.WriteFile(path, []byte(text), 0o644)
+}
+
+// executablePath is the absolute, symlink-free path of the running binary.
+func executablePath() (string, error) {
+	exe, err := os.Executable()
+	if err != nil {
+		return "", err
+	}
+	if resolved, err := filepath.EvalSymlinks(exe); err == nil {
+		exe = resolved
+	}
+	return exe, nil
+}
+
+// Uninstall removes what standalone init added: the hooks in
+// .claude/settings.local.json, the rules blocks in AGENTS.md and CLAUDE.md
+// (deleting files that become empty), and the enabled flag. Commits and
+// .gitignore are never touched. Problems with one step are reported on w and
+// do not stop the others.
+func Uninstall(repo *gitx.Repo, w io.Writer) error {
+	switch removed, err := RemoveStandaloneHooks(repo.Root); {
+	case errors.Is(err, ErrInvalidSettings):
+		fmt.Fprintf(w, "  ! %s is not valid JSON, left untouched\n", filepath.Join(".claude", "settings.local.json"))
+	case err != nil:
+		return err
+	case removed:
+		fmt.Fprintln(w, "✓ removed hooks from .claude/settings.local.json")
+	}
+	for _, name := range []string{"AGENTS.md", "CLAUDE.md"} {
+		removed, err := RemoveRules(filepath.Join(repo.Root, name))
+		if err != nil {
+			return err
+		}
+		if removed {
+			fmt.Fprintf(w, "✓ removed commit rules from %s\n", name)
+		}
+	}
+	return repo.UnsetLocal(ConfigKey)
 }

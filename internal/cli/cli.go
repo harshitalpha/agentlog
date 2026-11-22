@@ -51,7 +51,7 @@ func commands() []command {
 		{"hook-stop", "Claude Code Stop hook (plugin use)",
 			"agentlog hook-stop", hookStop},
 		{"uninstall", "remove standalone hooks and rules from a repo",
-			"agentlog uninstall [path]", stub("uninstall")},
+			"agentlog uninstall [path]", uninstallCmd},
 	}
 }
 

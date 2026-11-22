@@ -28,6 +28,9 @@ func HandleSessionStart(stdin []byte, env Env) string {
 	}
 	context := NotEnabledHint
 	if IsEnabled(repo, env) {
+		if !acquireLock(repo, startLockKey(in)) {
+			return "" // the same session already received the rules
+		}
 		context = Rules()
 	}
 	return marshalLine(sessionStartOutput{sessionStartSpecific{
