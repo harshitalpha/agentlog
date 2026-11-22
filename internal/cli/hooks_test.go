@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/exec"
 	"strings"
+	"sync"
 	"testing"
 )
 
@@ -114,4 +115,17 @@ func TestHookStopNeverNoisyOnBadInput(t *testing.T) {
 		}
 		_ = out
 	}
+}
+
+// lockedWriter makes a bytes.Buffer safe for a goroutine to write while the
+// test reads it.
+type lockedWriter struct {
+	mu sync.Mutex
+	w  *bytes.Buffer
+}
+
+func (l *lockedWriter) Write(p []byte) (int, error) {
+	l.mu.Lock()
+	defer l.mu.Unlock()
+	return l.w.Write(p)
 }

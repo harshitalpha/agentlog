@@ -64,7 +64,7 @@ func TestStubsDispatch(t *testing.T) {
 	for _, c := range commands() {
 		code, _, errOut := runCapture(c.name)
 		switch c.name {
-		case "init", "disable", "status", "uninstall":
+		case "init", "disable", "status", "uninstall", "watch":
 			continue // implemented; see their own tests
 		}
 		if strings.HasPrefix(c.name, "hook-") {

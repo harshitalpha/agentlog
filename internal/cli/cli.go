@@ -3,9 +3,12 @@
 package cli
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"os"
+	"os/signal"
+	"syscall"
 )
 
 // Version is set by main (and overridable at build time via -ldflags).
@@ -29,9 +32,18 @@ type command struct {
 
 // streams bundles the output writers so commands are testable.
 type streams struct {
+	ctx context.Context // cancelled on Ctrl+C / SIGTERM; nil means never
 	in  io.Reader
 	out io.Writer
 	err io.Writer
+}
+
+// context returns the cancellation context for long-running commands.
+func (s streams) context() context.Context {
+	if s.ctx == nil {
+		return context.Background()
+	}
+	return s.ctx
 }
 
 func commands() []command {
@@ -45,7 +57,7 @@ func commands() []command {
 		{"ui", "open the timeline UI",
 			"agentlog ui [path] [--port N] [--no-open] [--detach] [--stop]", stub("ui")},
 		{"watch", "auto-commit after edits settle (for agents without hooks)",
-			"agentlog watch [path] [--quiet 20] [--interval 2]", stub("watch")},
+			"agentlog watch [path] [--quiet 20] [--interval 2]", watchCmd},
 		{"hook-session-start", "Claude Code SessionStart hook (plugin use)",
 			"agentlog hook-session-start", hookSessionStart},
 		{"hook-stop", "Claude Code Stop hook (plugin use)",
@@ -75,7 +87,9 @@ func usageText() string {
 // Run executes the CLI and returns the process exit code
 // (0 success, 1 runtime error, 2 usage error).
 func Run(args []string) int {
-	return run(args, streams{in: os.Stdin, out: os.Stdout, err: os.Stderr})
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
+	return run(args, streams{ctx: ctx, in: os.Stdin, out: os.Stdout, err: os.Stderr})
 }
 
 func run(args []string, s streams) int {

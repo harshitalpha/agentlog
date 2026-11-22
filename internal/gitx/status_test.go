@@ -3,7 +3,9 @@ package gitx
 import (
 	"reflect"
 	"sort"
+	"strings"
 	"testing"
+	"time"
 )
 
 func paths(files []DirtyFile) []string {
@@ -107,5 +109,31 @@ func TestParsePorcelainZHandlesCopyAndEmpty(t *testing.T) {
 	got := parsePorcelainZ("C  copy.txt\x00orig.txt\x00?? z.txt\x00")
 	if p := paths(got); !reflect.DeepEqual(p, []string{"copy.txt", "z.txt"}) {
 		t.Fatalf("paths = %v", p)
+	}
+}
+
+func TestWorkingSignature(t *testing.T) {
+	r := newRepo(t)
+	commitFile(t, r, "a.txt", "1\n", "First", "")
+	if sig, err := r.WorkingSignature(); err != nil || sig != "" {
+		t.Fatalf("clean tree: sig=%q err=%v", sig, err)
+	}
+	write(t, r, "a.txt", "2\n")
+	s1, _ := r.WorkingSignature()
+	if s1 == "" {
+		t.Fatal("dirty tree must have a signature")
+	}
+	if s1b, _ := r.WorkingSignature(); s1b != s1 {
+		t.Fatal("signature must be stable while nothing changes")
+	}
+	// Same line count, same size, different content: diff --stat is identical.
+	time.Sleep(20 * time.Millisecond)
+	write(t, r, "a.txt", "3\n")
+	if s2, _ := r.WorkingSignature(); s2 == s1 {
+		t.Fatal("re-editing a file with an identical diff stat must change the signature")
+	}
+	write(t, r, "new.txt", "x\n")
+	if s3, _ := r.WorkingSignature(); s3 == "" || !strings.Contains(s3, "new.txt") {
+		t.Fatalf("untracked file missing from signature: %q", s3)
 	}
 }

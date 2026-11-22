@@ -1,6 +1,11 @@
 package gitx
 
-import "strings"
+import (
+	"fmt"
+	"os"
+	"path/filepath"
+	"strings"
+)
 
 // DirtyFile is one entry of `git status`: a changed or untracked path.
 type DirtyFile struct {
@@ -35,4 +40,37 @@ func parsePorcelainZ(out string) []DirtyFile {
 		}
 	}
 	return files
+}
+
+// maxSignatureFiles bounds how many dirty files are stat'ed for a signature.
+const maxSignatureFiles = 500
+
+// WorkingSignature returns a string that changes whenever the uncommitted
+// state changes, and is "" when the tree is clean. It combines the status
+// listing, `git diff --stat` and each dirty file's size and mtime, so editing
+// a file again is noticed even when the diff stat stays the same.
+func (r *Repo) WorkingSignature() (string, error) {
+	files, err := r.DirtyFiles()
+	if err != nil {
+		return "", err
+	}
+	if len(files) == 0 {
+		return "", nil
+	}
+	stat, err := r.run("diff", "--stat", "--no-color", "--no-ext-diff")
+	if err != nil {
+		return "", err
+	}
+	var b strings.Builder
+	for i, f := range files {
+		fmt.Fprintf(&b, "%s %s", f.Status, f.Path)
+		if i < maxSignatureFiles {
+			if fi, err := os.Lstat(filepath.Join(r.Root, filepath.FromSlash(f.Path))); err == nil {
+				fmt.Fprintf(&b, " %d %d", fi.Size(), fi.ModTime().UnixNano())
+			}
+		}
+		b.WriteByte('\n')
+	}
+	b.WriteString(stat)
+	return b.String(), nil
 }
