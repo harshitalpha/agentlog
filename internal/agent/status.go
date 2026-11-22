@@ -96,11 +96,11 @@ func (s Status) Print(w io.Writer) {
 		fmt.Fprintln(w, "  enabled:      no (run /agentlog:init or: agentlog init)")
 	}
 	fmt.Fprintf(w, "  branch:       %s\n", s.Branch)
-	since := "commits"
+	total := fmt.Sprintf("%d", s.Commits.Total())
 	if s.HasBaseline {
-		since = "commits since baseline"
+		total += " since baseline"
 	}
-	fmt.Fprintf(w, "  %-13s %d (%d agent, %d human, %d auto)\n", since+":", s.Commits.Total(), s.Commits.Agent, s.Commits.Human, s.Commits.Auto)
+	fmt.Fprintf(w, "  commits:      %s (%d agent, %d human, %d auto)\n", total, s.Commits.Agent, s.Commits.Human, s.Commits.Auto)
 	fmt.Fprintf(w, "  uncommitted:  %d file%s\n", s.Uncommitted, plural(s.Uncommitted))
 	if s.UIURL != "" {
 		fmt.Fprintf(w, "  ui:           %s\n", s.UIURL)

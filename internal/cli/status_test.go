@@ -56,7 +56,7 @@ func TestStatusHumanOutput(t *testing.T) {
 	}
 	for _, want := range []string{
 		"enabled:      yes (this repo)",
-		"commits since baseline: 5 (3 agent, 1 human, 1 auto)",
+		"commits:      5 since baseline (3 agent, 1 human, 1 auto)",
 		"uncommitted:  2 files",
 		"not running",
 	} {
@@ -97,7 +97,7 @@ func TestStatusNotEnabledAndEnforceEverywhere(t *testing.T) {
 	dir := t.TempDir()
 	_ = exec.Command("git", "-C", dir, "init", "-q").Run()
 	_, out, _ := runWithStdin("", "status", dir)
-	if !strings.Contains(out, "enabled:      no") || !strings.Contains(out, "commits: 0") {
+	if !strings.Contains(out, "enabled:      no") || !strings.Contains(out, "commits:      0 (0 agent") {
 		t.Fatalf("out:\n%s", out)
 	}
 	t.Setenv("CLAUDE_PLUGIN_OPTION_ENFORCE_EVERYWHERE", "true")
