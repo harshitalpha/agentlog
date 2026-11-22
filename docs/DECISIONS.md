@@ -251,6 +251,17 @@ reference and marketplace reference. Everything in the spec still holds except t
 - `make validate` (strict plugin validation and marketplace validation) passes, and `make dist` builds all
   five platforms (this also compiles the Windows spawn code for real).
 
+## Browser e2e (T6.1)
+
+- **Fixtures:** one demo repo is built per worker (slow: ~17s with this machine's git wrapper) and copied
+  for every test, so each test gets a private repo and its own `agentlog ui` on port 7799 and can mutate
+  it freely. `live.spec.ts` runs its own server on 7798 because it stops and restarts it.
+- **Console errors fail the test.** The `page` fixture leaves the app (`about:blank`) before asserting, and
+  depends on `demo`, so a poll racing the server teardown is not reported as a bug.
+- **Mutation-checked:** widening the diff number columns to 300px makes the layout test fail
+  (`Received: 300`, limit 70), so the colgroup regression is covered.
+- `make e2e` runs the unit specs and the browser specs (41 tests, about 1.5 minutes).
+
 ## Later
 
 - `WorkingPatch` spawns one `git diff --no-index` per untracked file (up to 200). Fine on
