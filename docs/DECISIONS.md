@@ -318,6 +318,19 @@ Observation: Claude follows an explicit "do not run git" over the Stop hook's re
 auto-commit is what guarantees a clean tree. A repo-local `AGENTS.md` committed by the agent after `init`
 was killed by SIGPIPE was just a symptom of that bug, not a separate problem.
 
+## Final review (T6.6)
+
+- `make check`, `make e2e` (42 tests) and `make validate` (strict) pass; no stray processes or temp
+  directories are left after a run; every task in `docs/10-tasks.md` is ticked.
+- The only `TODO` in tracked files is sample text that `scripts/make-demo-repo.sh` writes into the demo
+  repo. `go.mod` has no requirements, and only `internal/gitx` runs git (`uiproc` runs the UI child and
+  the browser opener).
+- `server_test.go` (727 lines) was split by concern to respect the ~400 line guideline.
+- **Flaky e2e found and fixed:** `live.spec.ts` failed once, then passed on rerun. It builds its own demo repo
+  (~17s here) inside Playwright's default 30s test timeout and then waits ~15s for polling, so it ran at
+  24-29s. The failing run's phase timings were not captured, so this is the most likely cause rather than a
+  proven one. The test now has a 120s timeout (4 consecutive passes at ~26s) and removes its temp dir.
+
 ## Later
 
 - `WorkingPatch` spawns one `git diff --no-index` per untracked file (up to 200). Fine on
