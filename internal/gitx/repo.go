@@ -44,13 +44,17 @@ func (r *Repo) HasCommits() bool {
 	return err == nil && code == 0
 }
 
-// Head returns the full hash of HEAD, or "" when there are no commits.
+// Head returns the full hash of HEAD, or "" when there are no commits. It
+// costs a single git call because the UI polls it.
 func (r *Repo) Head() (string, error) {
-	if !r.HasCommits() {
+	out, code, err := r.runCode("rev-parse", "--verify", "-q", "HEAD")
+	if err != nil {
+		return "", err
+	}
+	if code != 0 {
 		return "", nil
 	}
-	out, err := r.run("rev-parse", "HEAD")
-	return strings.TrimSpace(out), err
+	return strings.TrimSpace(out), nil
 }
 
 // Branch returns the current branch name. It works before the first commit

@@ -243,3 +243,23 @@ func TestFileAtErrors(t *testing.T) {
 		}
 	}
 }
+
+func TestCommitPatchUnknownCommit(t *testing.T) {
+	r := newRepo(t)
+	commitFile(t, r, "a.txt", "1\n", "First", "")
+	for _, h := range []string{"deadbeef", "0000", strings.Repeat("a", 40)} {
+		if _, err := r.CommitPatch(h); !errors.Is(err, ErrNotFound) {
+			t.Errorf("CommitPatch(%q) err = %v, want ErrNotFound", h, err)
+		}
+	}
+	// A blob hash is not a commit.
+	blob := strings.TrimSpace(git(t, r, "rev-parse", "HEAD:a.txt"))
+	if _, err := r.CommitPatch(blob); !errors.Is(err, ErrNotFound) {
+		t.Errorf("blob hash err = %v, want ErrNotFound", err)
+	}
+	// Short hashes of real commits still work.
+	h, _ := r.Head()
+	if _, err := r.CommitPatch(h[:8]); err != nil {
+		t.Errorf("short hash: %v", err)
+	}
+}

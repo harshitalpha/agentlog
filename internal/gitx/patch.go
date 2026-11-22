@@ -17,8 +17,14 @@ const (
 )
 
 // CommitPatch returns the unified patch of one commit against its first
-// parent (root commits show every file as added).
+// parent (root commits show every file as added). An unknown commit returns
+// ErrNotFound.
 func (r *Repo) CommitPatch(hash string) (string, error) {
+	if _, code, err := r.runCode("rev-parse", "--verify", "-q", "--end-of-options", hash+"^{commit}"); err != nil {
+		return "", err
+	} else if code != 0 {
+		return "", ErrNotFound
+	}
 	return r.run("show", "--format=", "--patch", "-M", "--no-color", "--first-parent",
 		"--no-ext-diff", "--end-of-options", hash)
 }
