@@ -1,0 +1,15 @@
+#!/bin/sh
+# Picks the prebuilt agentlog binary for this OS/arch and execs it.
+DIR="$(cd "$(dirname "$0")" && pwd)"
+os="$(uname -s | tr '[:upper:]' '[:lower:]')"; arch="$(uname -m)"
+case "$os" in mingw*|msys*|cygwin*) os=windows ;; esac
+case "$arch" in x86_64|amd64) arch=amd64 ;; arm64|aarch64) arch=arm64 ;; esac
+bin="$DIR/dist/agentlog-$os-$arch"; [ "$os" = windows ] && bin="$bin.exe"
+if [ ! -x "$bin" ]; then
+  # Never break Claude: hooks must exit 0 even when no binary fits this platform.
+  case "$1" in hook-*) cat >/dev/null; exit 0 ;; esac
+  echo "agentlog: no prebuilt binary for $os-$arch. Install with: go install github.com/OWNER/agentlog/cmd/agentlog@latest" >&2
+  command -v agentlog >/dev/null 2>&1 && exec agentlog "$@"
+  exit 1
+fi
+exec "$bin" "$@"

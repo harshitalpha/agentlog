@@ -1,0 +1,31 @@
+{
+  "name": "agentlog",
+  "displayName": "agentlog",
+  "version": "0.1.0",
+  "description": "Makes AI coding agents commit every change locally with clear messages, and shows the history as a clickable timeline with diffs. Nothing is pushed.",
+  "author": { "name": "OWNER", "url": "https://github.com/OWNER" },
+  "homepage": "https://github.com/OWNER/agentlog",
+  "repository": "https://github.com/OWNER/agentlog",
+  "license": "MIT",
+  "keywords": ["git", "commits", "history", "review", "diff", "local", "timeline"],
+  "icon": "./assets/icon.png",
+  "documentationUrl": "https://github.com/OWNER/agentlog#readme",
+  "supportUrl": "https://github.com/OWNER/agentlog/issues",
+  "privacyPolicyUrl": "https://github.com/OWNER/agentlog/blob/main/PRIVACY.md",
+  "userConfig": {
+    "enforce_everywhere": {
+      "type": "boolean",
+      "title": "Enforce in every git repo",
+      "description": "If on, agentlog enforces commits in every git repo. If off (default), only in repos where you ran /agentlog:init.",
+      "default": false
+    },
+    "ui_port": {
+      "type": "number",
+      "title": "Timeline UI port",
+      "description": "Local port for the agentlog timeline UI",
+      "default": 7777,
+      "min": 1024,
+      "max": 65535
+    }
+  }
+}
