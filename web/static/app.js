@@ -7,11 +7,22 @@ import { renderDetail, renderLoading, renderError, renderPlaceholder, renderFile
 
 const $ = (selector) => document.querySelector(selector);
 
+const ORDER_KEY = 'agentlog.order';
+const POLL_MS = 3000;
+
+// localStorage can throw (privacy modes, disabled storage): treat it as optional.
+function readOrder() {
+  try { return localStorage.getItem(ORDER_KEY) === 'old' ? 'old' : 'new'; } catch { return 'new'; }
+}
+function saveOrder(order) {
+  try { localStorage.setItem(ORDER_KEY, order); } catch { /* ignore */ }
+}
+
 const state = {
   repo: { name: '', branch: '', head: '', dirty: 0 },
   commits: [],
   selected: null,
-  order: 'new',
+  order: readOrder(),
   query: '',
   filesByHash: new Map(),
   patches: new Map(), // hash -> {files, truncated}; never holds WORKING
@@ -37,6 +48,15 @@ function drawOrder() {
   }
 }
 
+function setLive(ok) {
+  const dot = $('#live');
+  dot.classList.toggle('off', !ok);
+  dot.title = ok ? 'live: refreshes as commits land' : 'disconnected';
+}
+
+/** Rows with no filter and no order games: used to look commits up by hash. */
+const allRows = () => buildRows(state.commits, state.repo.dirty);
+
 async function loadPatch(hash) {
   const cached = state.patches.get(hash);
   if (cached) return cached;
@@ -51,8 +71,7 @@ async function loadPatch(hash) {
 async function showDetail({ keepScroll = false } = {}) {
   const hash = state.selected;
   const el = $('#detail');
-  // Unfiltered: the filter box may hide the selected commit from the timeline.
-  const row = buildRows(state.commits, state.repo.dirty).find((r) => r.hash === hash);
+  const row = allRows().find((r) => r.hash === hash); // the filter may hide it from the timeline
   if (!row) return renderPlaceholder(el, state.commits.length ? 'Pick a commit' : 'Nothing to show yet');
   if (!keepScroll) renderLoading(el);
   try {
@@ -67,30 +86,70 @@ async function showDetail({ keepScroll = false } = {}) {
   }
 }
 
-function select(hash) {
+function setHash(hash) {
+  // Working-tree state is transient, so it is not a deep link.
+  const want = hash && hash !== 'WORKING' ? `#${hash}` : '';
+  if (location.hash !== want) history.replaceState(null, '', want || location.pathname + location.search);
+}
+
+function select(hash, { scroll = false } = {}) {
   state.selected = hash;
+  setHash(hash);
   drawTimeline();
+  if (scroll) $('#timeline .item.sel')?.scrollIntoView({ block: 'nearest' });
   showDetail();
+}
+
+/** A commit matching location.hash (full hash or a prefix of at least 4 chars), or null. */
+function hashTarget() {
+  const want = location.hash.slice(1).toLowerCase();
+  if (want.length < 4) return null;
+  return state.commits.find((c) => c.hash.startsWith(want)) || null;
 }
 
 async function refresh(first) {
   const repo = await getJSON('/api/repo');
   const changed = first || repo.head !== state.repo.head || repo.dirty !== state.repo.dirty;
-  state.repo = repo;
   $('#repoName').textContent = repo.name;
   $('#branch').textContent = repo.branch;
   document.title = `agentlog · ${repo.name}`;
-  if (!changed) return;
-  state.commits = await getJSON('/api/commits');
+  if (!changed) { state.repo = repo; return; }
+  const commits = await getJSON('/api/commits');
+  state.repo = repo;
+  state.commits = commits;
+
   const prev = state.selected;
-  const list = rows();
-  if (!list.some((r) => r.hash === state.selected)) {
-    const top = state.order === 'new' ? list[0] : list[list.length - 1];
+  const linked = first ? hashTarget() : null;
+  if (linked) state.selected = linked.hash;
+  else if (!allRows().some((r) => r.hash === state.selected)) {
+    // Selection is gone (or first run): take the top item of the current order, ignoring the filter.
+    const top = buildRows(state.commits, state.repo.dirty, { order: state.order })[0];
     state.selected = top ? top.hash : null;
   }
+  setHash(state.selected);
   drawTimeline();
+  if (linked) $('#timeline .item.sel')?.scrollIntoView({ block: 'nearest' });
   if (first || state.selected !== prev) showDetail();
   else if (state.selected === 'WORKING') showDetail({ keepScroll: true });
+}
+
+let polling = false;
+let failures = 0;
+
+async function poll(first = false) {
+  if (polling) return; // never stack requests on a slow server
+  polling = true;
+  try {
+    await refresh(first);
+    failures = 0;
+    setLive(true);
+  } catch (err) {
+    failures++;
+    if (failures >= 2) setLive(false); // one blip is not a disconnect
+    console.error(err);
+  } finally {
+    polling = false;
+  }
 }
 
 let modalToken = 0;
@@ -119,9 +178,34 @@ function closeModal() {
   return true;
 }
 
+function setQuery(value) {
+  state.query = value;
+  drawTimeline();
+}
+
 $('#modalClose').addEventListener('click', closeModal);
 $('#modal').addEventListener('click', (e) => { if (e.target.id === 'modal') closeModal(); });
-document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
+
+document.addEventListener('keydown', (e) => {
+  const filter = $('#filter');
+  if (e.key === 'Escape') {
+    if (closeModal()) return;
+    if (e.target === filter) { filter.value = ''; setQuery(''); filter.blur(); }
+    return;
+  }
+  const typing = /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName) || e.target.isContentEditable;
+  if (typing || e.ctrlKey || e.metaKey || e.altKey || !$('#modal').hidden) return;
+  if (e.key === '/') {
+    e.preventDefault();
+    filter.focus();
+  } else if (e.key === 'j' || e.key === 'k') {
+    const list = rows();
+    if (!list.length) return;
+    const i = list.findIndex((r) => r.hash === state.selected);
+    const next = list[Math.max(0, Math.min(list.length - 1, i + (e.key === 'j' ? 1 : -1)))];
+    if (next) select(next.hash, { scroll: true });
+  }
+});
 
 $('#detail').addEventListener('click', (e) => {
   const t = e.target.closest('[data-tog],[data-jump],[data-copy],[data-view]');
@@ -149,16 +233,16 @@ $('#order').addEventListener('click', (e) => {
   const btn = e.target.closest('[data-order]');
   if (!btn || btn.dataset.order === state.order) return;
   state.order = btn.dataset.order;
+  saveOrder(state.order);
   drawOrder();
   drawTimeline();
 });
-$('#filter').addEventListener('input', (e) => {
-  state.query = e.target.value;
-  drawTimeline();
+$('#filter').addEventListener('input', (e) => setQuery(e.target.value));
+window.addEventListener('hashchange', () => {
+  const target = hashTarget();
+  if (target && target.hash !== state.selected) select(target.hash, { scroll: true });
 });
 
-refresh(true).catch((err) => {
-  $('#live').classList.add('off');
-  $('#live').title = 'disconnected';
-  console.error(err);
-});
+drawOrder();
+poll(true);
+setInterval(poll, POLL_MS);

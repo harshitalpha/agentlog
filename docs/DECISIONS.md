@@ -203,6 +203,17 @@ ever run inside a repo. Verified: a full `go test ./...` leaves HEAD, status and
 - **`stripTrailers` is case-insensitive** (like the prototype) and only removes `Agent:`,
   `Co-Authored-By:`, `Claude-Session:` and `Signed-off-by:` lines.
 
+- **UI module split (T4.3-T4.6):** `docs/03` lists `app.js`, `diff.js`, `render.js`, `util.js`. The
+  detail/diff/modal builders live in an extra `detail.js` so no file passes ~400 lines. `buildRows`
+  (numbering, working-tree row, filter, order) is in `util.js` so Node can unit test it.
+- **Deep links:** `#<hash>` accepts a full hash or a prefix of at least 4 characters. An unknown or
+  too-short hash falls back to the top item. Selection uses `history.replaceState` (no history entry per
+  click), and the working tree is never written to the URL because it is transient.
+- **Selection survives the filter:** "does the selection still exist" and the detail lookup use the
+  unfiltered rows, so typing in the filter never swaps the commit being read.
+- **Polling:** one request chain at a time (a slow server never gets stacked polls). The live dot goes grey
+  after 2 consecutive failures, back to green on the next success.
+
 ## Later
 
 - `WorkingPatch` spawns one `git diff --no-index` per untracked file (up to 200). Fine on
