@@ -57,6 +57,27 @@ Choices made where the spec was ambiguous or the real world disagreed. Newest la
 - **Hook errors** go to stderr and `${CLAUDE_PLUGIN_DATA}/agentlog.log`; `runHook` also recovers
   from panics so a hook can never exit non-zero.
 
+## Init (M2)
+
+- **Init logic lives in `internal/agent/init.go`** (`agent.Init`), with `cli/init.go` only parsing
+  flags. This keeps the "cli holds no business logic" rule; the file is an addition to the layout in
+  `03-project-structure.md`, inside an existing package.
+- **Baseline need is decided before `.gitignore` is edited.** Spec order is: `.gitignore`, baseline,
+  enable, rules, commit. If we evaluated "is the tree dirty" after step 4, every existing clean repo
+  would get a "baseline" containing only our `.gitignore` edit. So: decide first, but still write
+  `.gitignore` before the baseline's `git add -A` so `.env` files are never committed (tested).
+- **Step 9 commits only the files init touched** (`.gitignore`, `AGENTS.md`, `CLAUDE.md`) through a
+  new `gitx.CommitPaths`, so with `--no-baseline` the user's other uncommitted edits stay uncommitted.
+- **init commits are human commits** (user's identity, no `Agent:` trailer), so they show without a
+  badge in the UI and count as "human" in `status`.
+- **Refuses to `git init` in `$HOME` or `/`.** The baseline runs `git add -A`; doing that over a home
+  directory would be a disaster. Subfolders of home are fine, and existing repos are never refused.
+- **Flags may follow the path** (`init <dir> --claude-md`); Go's `flag` stops at the first positional
+  so `cli/args.go` re-parses around it.
+- **Init commits are signed per the user's own git config** (they are the user's commits). Only
+  auto-commits force signing off.
+- `--standalone-hook` returns "not implemented yet" until T2.8.
+
 ## Later
 
 - `WorkingPatch` spawns one `git diff --no-index` per untracked file (up to 200). Fine on
