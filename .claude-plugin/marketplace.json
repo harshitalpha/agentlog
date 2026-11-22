@@ -1,0 +1,12 @@
+{
+  "name": "agentlog",
+  "description": "agentlog: local commit history for AI coding agents",
+  "owner": { "name": "OWNER" },
+  "plugins": [
+    {
+      "name": "agentlog",
+      "source": { "source": "git-subdir", "url": "OWNER/agentlog", "path": "plugin", "ref": "release" },
+      "description": "Force agents to commit locally with clear messages; browse the history as a timeline."
+    }
+  ]
+}

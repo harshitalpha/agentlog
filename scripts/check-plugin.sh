@@ -55,6 +55,18 @@ pv=$(sed -n 's/.*"version": *"\([^"]*\)".*/\1/p' "$P/.claude-plugin/plugin.json"
 mv=$(sed -n 's/^var version = "\([^"]*\)".*/\1/p' cmd/agentlog/main.go)
 [ -n "$pv" ] && [ "$pv" = "$mv" ] || bad "version mismatch: plugin.json=$pv main.version=$mv"
 
+# --- marketplace entry name must equal the manifest name (else installs fail with "not found") ---
+if [ -f .claude-plugin/marketplace.json ]; then
+  python3 - <<'PY' || fail=1
+import json, sys
+m = json.load(open(".claude-plugin/marketplace.json"))
+p = json.load(open("plugin/.claude-plugin/plugin.json"))
+names = [e.get("name") for e in m.get("plugins", [])]
+if p["name"] not in names:
+    print(f"check-plugin: FAIL: marketplace entries {names} do not include plugin name {p['name']!r}", file=sys.stderr); sys.exit(1)
+PY
+fi
+
 # --- launcher -------------------------------------------------------------------
 tmp=$(mktemp -d) || exit 1
 trap 'rm -rf "$tmp"' EXIT
