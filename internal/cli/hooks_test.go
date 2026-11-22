@@ -13,7 +13,18 @@ import (
 func TestMain(m *testing.M) {
 	os.Setenv("GIT_CONFIG_GLOBAL", os.DevNull)
 	os.Setenv("GIT_CONFIG_NOSYSTEM", "1")
-	os.Exit(m.Run())
+	// Run from a throwaway directory so no command that defaults to "." can
+	// ever touch the real repository the tests live in.
+	scratch, err := os.MkdirTemp("", "agentlog-cli-test-")
+	if err != nil {
+		panic(err)
+	}
+	if err := os.Chdir(scratch); err != nil {
+		panic(err)
+	}
+	code := m.Run()
+	os.RemoveAll(scratch)
+	os.Exit(code)
 }
 
 func runWithStdin(stdin string, args ...string) (code int, out, errOut string) {

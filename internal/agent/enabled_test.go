@@ -12,7 +12,18 @@ import (
 func TestMain(m *testing.M) {
 	os.Setenv("GIT_CONFIG_GLOBAL", os.DevNull)
 	os.Setenv("GIT_CONFIG_NOSYSTEM", "1")
-	os.Exit(m.Run())
+	// Hooks fall back to the working directory when no cwd is given; run from a
+	// throwaway directory so tests can never act on the real repository.
+	scratch, err := os.MkdirTemp("", "agentlog-agent-test-")
+	if err != nil {
+		panic(err)
+	}
+	if err := os.Chdir(scratch); err != nil {
+		panic(err)
+	}
+	code := m.Run()
+	os.RemoveAll(scratch)
+	os.Exit(code)
 }
 
 // newRepo makes a temp git repo with a local identity and no signing.

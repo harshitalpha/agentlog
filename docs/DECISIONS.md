@@ -107,6 +107,32 @@ Choices made where the spec was ambiguous or the real world disagreed. Newest la
 - **`gitx.Repo.GitPath`** resolves paths inside the git dir with `rev-parse --git-path`, so linked
   worktrees put `agentlog/` state in the shared git dir.
 
+## Watch (M2)
+
+- **`WorkingSignature` adds size and mtime of each dirty file** (first 500) to the spec's
+  `status` + `diff --stat`, so re-editing a file to an identical diff stat still counts as activity.
+- `--quiet` and `--interval` accept fractional seconds (`Float64`), which keeps tests fast.
+- `streams` carries a `ctx` (cancelled on SIGINT/SIGTERM); `watch` returns 0 on cancel.
+
+## Build incident: tests ran against this repo (fixed)
+
+From T2.6 until this fix, `TestStubsDispatch` ran every subcommand with no arguments before
+skipping the implemented ones, so `init`/`disable`/`uninstall` (and later `watch`, which never
+returns) operated on the agentlog repo itself. Effects:
+
+- Stray commits `1d8a10f`, `13087b5`, `425bfce`, `d957f53`, `48ddcca`, `a8621eb`, `e5f89de`
+  ("Baseline snapshot before agent work" / "Add agentlog commit rules…") were created by tests, not
+  by a task. The baseline commits swept up the uncommitted work of T2.6-T2.9, so code for those tasks
+  lives in them rather than in the like-named task commits (`115a470`, `a8e4e24`, `52be86c`).
+- `AGENTS.md` briefly gained a rules block (restored from the spec pack) and `.gitignore` gained
+  the `.claude/settings.local.json`, `.env`, `.env.*` lines (kept; harmless).
+- No work was lost and nothing was pushed. History was not rewritten (CLAUDE.md forbids it).
+
+Fix: the stub test only runs commands that are still stubs; the `cli` and `agent` test binaries
+`chdir` into a throwaway directory in `TestMain`; `TestWorkingDirectoryIsNotAGitRepo` fails if tests
+ever run inside a repo. Verified: a full `go test ./...` leaves HEAD, status and git config unchanged.
+**Rule for new tests:** never run a command whose default path is `.` without an explicit temp dir.
+
 ## Later
 
 - `WorkingPatch` spawns one `git diff --no-index` per untracked file (up to 200). Fine on

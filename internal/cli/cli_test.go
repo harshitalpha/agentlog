@@ -2,6 +2,8 @@ package cli
 
 import (
 	"bytes"
+	"os"
+	"os/exec"
 	"strings"
 	"testing"
 )
@@ -60,21 +62,21 @@ func TestEveryCommandHasHelp(t *testing.T) {
 	}
 }
 
+// Only commands that are still stubs may be run with no arguments here: a
+// real command would operate on the current directory.
 func TestStubsDispatch(t *testing.T) {
-	for _, c := range commands() {
-		code, _, errOut := runCapture(c.name)
-		switch c.name {
-		case "init", "disable", "status", "uninstall", "watch":
-			continue // implemented; see their own tests
+	for _, name := range []string{"ui"} {
+		code, _, errOut := runCapture(name)
+		if code != 1 || !strings.Contains(errOut, name+" is not implemented") {
+			t.Errorf("%s: code=%d err=%q", name, code, errOut)
 		}
-		if strings.HasPrefix(c.name, "hook-") {
-			if code != 0 {
-				t.Errorf("%s must always exit 0, got %d", c.name, code)
-			}
-			continue // implemented; behaviour is covered in hooks_test.go
-		}
-		if code != 1 || !strings.Contains(errOut, c.name+" is not implemented") {
-			t.Errorf("%s: code=%d err=%q", c.name, code, errOut)
-		}
+	}
+}
+
+// Guards the test setup itself: tests must never run inside the real repo.
+func TestWorkingDirectoryIsNotAGitRepo(t *testing.T) {
+	wd, _ := os.Getwd()
+	if out, err := exec.Command("git", "-C", wd, "rev-parse", "--show-toplevel").Output(); err == nil {
+		t.Fatalf("tests run inside a git repo (%s); a stray command could modify it", strings.TrimSpace(string(out)))
 	}
 }
