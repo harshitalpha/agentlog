@@ -8,3 +8,6 @@ e2e/playwright-report/
 # original spec pack folder (copied into docs/ and reference/)
 agentlog-build-docs/
 .DS_Store
+.claude/settings.local.json
+.env
+.env.*

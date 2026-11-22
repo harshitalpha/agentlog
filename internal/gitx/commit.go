@@ -45,8 +45,8 @@ func (r *Repo) StagedEmpty() (bool, error) {
 	return false, &Error{Args: "diff --cached --quiet", Code: code}
 }
 
-// Commit commits what is staged. body may be empty.
-func (r *Repo) Commit(subject, body string, opts CommitOpts) error {
+// commitArgs builds the `git commit` argument list for subject/body/opts.
+func commitArgs(subject, body string, opts CommitOpts) []string {
 	var args []string
 	if opts.Identity != nil {
 		args = append(args, "-c", "user.name="+opts.Identity.Name, "-c", "user.email="+opts.Identity.Email)
@@ -62,8 +62,45 @@ func (r *Repo) Commit(subject, body string, opts CommitOpts) error {
 	if body != "" {
 		args = append(args, "-m", body)
 	}
-	_, err := r.run(args...)
+	return args
+}
+
+// Commit commits what is staged. body may be empty.
+func (r *Repo) Commit(subject, body string, opts CommitOpts) error {
+	_, err := r.run(commitArgs(subject, body, opts)...)
 	return err
+}
+
+// CommitPaths stages and commits only the given repo-relative paths, leaving
+// every other change (staged or not) alone. It returns committed=false when
+// none of the paths has changes.
+func (r *Repo) CommitPaths(subject, body string, paths []string, opts CommitOpts) (committed bool, err error) {
+	files, err := r.DirtyFiles()
+	if err != nil {
+		return false, err
+	}
+	want := map[string]bool{}
+	for _, p := range paths {
+		want[p] = true
+	}
+	var changed []string
+	for _, f := range files {
+		if want[f.Path] {
+			changed = append(changed, f.Path)
+		}
+	}
+	if len(changed) == 0 {
+		return false, nil
+	}
+	if _, err := r.run(append([]string{"add", "--"}, changed...)...); err != nil {
+		return false, err
+	}
+	// `commit -- <paths>` commits only those paths, ignoring other staged files.
+	args := append(commitArgs(subject, body, opts), "--")
+	if _, err := r.run(append(args, changed...)...); err != nil {
+		return false, err
+	}
+	return true, nil
 }
 
 // AutoCommit stages everything and commits it as the reserved `agentlog`

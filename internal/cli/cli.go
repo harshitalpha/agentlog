@@ -37,7 +37,7 @@ type streams struct {
 func commands() []command {
 	return []command{
 		{"init", "enable agentlog in a project (git init, baseline commit, rules)",
-			"agentlog init [path] [--no-agents-md] [--claude-md] [--no-baseline] [--standalone-hook]", stub("init")},
+			"agentlog init [path] [--no-agents-md] [--claude-md] [--no-baseline] [--standalone-hook]", initCmd},
 		{"disable", "turn enforcement off for a repo (commits are kept)",
 			"agentlog disable [path]", stub("disable")},
 		{"status", "show whether agentlog is enabled and what it has committed",

@@ -195,3 +195,47 @@ func TestAutoCommitWithoutAnyUserIdentity(t *testing.T) {
 		t.Fatalf("ok=%v err=%v", ok, err)
 	}
 }
+
+func TestCommitPathsLeavesOtherChangesAlone(t *testing.T) {
+	r := newRepo(t)
+	commitFile(t, r, "base.txt", "1\n", "Base", "")
+	write(t, r, ".gitignore", "x\n")
+	write(t, r, "AGENTS.md", "rules\n")
+	write(t, r, "mine.txt", "user work\n") // untracked, must stay untracked
+	write(t, r, "base.txt", "2\n")         // modified, must stay modified
+	write(t, r, "staged.txt", "s\n")
+	git(t, r, "add", "staged.txt") // staged by the user, must stay staged
+
+	ok, err := r.CommitPaths("Add rules", "body", []string{".gitignore", "AGENTS.md", "missing.txt"}, CommitOpts{})
+	if err != nil || !ok {
+		t.Fatalf("ok=%v err=%v", ok, err)
+	}
+	if out := git(t, r, "show", "--name-only", "--format=", "HEAD"); !strings.Contains(out, "AGENTS.md") || !strings.Contains(out, ".gitignore") {
+		t.Fatalf("requested files missing from commit:\n%s", out)
+	}
+	if out := git(t, r, "show", "--name-only", "--format=", "HEAD"); strings.Contains(out, "mine.txt") ||
+		strings.Contains(out, "staged.txt") || strings.Contains(out, "base.txt") {
+		t.Fatalf("commit swept up unrelated files:\n%s", out)
+	}
+	left, _ := r.DirtyFiles()
+	got := paths(left)
+	want := map[string]bool{"mine.txt": true, "base.txt": true, "staged.txt": true}
+	if len(got) != 3 {
+		t.Fatalf("remaining dirty = %v", got)
+	}
+	for _, p := range got {
+		if !want[p] {
+			t.Fatalf("unexpected remaining file %q", p)
+		}
+	}
+}
+
+func TestCommitPathsNothingToCommit(t *testing.T) {
+	r := newRepo(t)
+	commitFile(t, r, "base.txt", "1\n", "Base", "")
+	write(t, r, "other.txt", "x\n")
+	ok, err := r.CommitPaths("Nope", "", []string{"base.txt"}, CommitOpts{})
+	if err != nil || ok {
+		t.Fatalf("ok=%v err=%v", ok, err)
+	}
+}
