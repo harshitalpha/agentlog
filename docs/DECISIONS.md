@@ -273,6 +273,15 @@ reference and marketplace reference. Everything in the spec still holds except t
 - The workflows cannot be run locally; their YAML was parsed but they are untested until the first push.
   Watch the first CI run (macOS `sed`/`mktemp` use in `scripts/check-plugin.sh`, Playwright install).
 
+## README (T6.3)
+
+- The root `README.md` that shipped with the build pack (an intro for whoever builds the project) was
+  replaced by the product README. The spec itself stays in `docs/`. `docs/screenshot.png` is a real capture
+  of the finished UI on the demo repo (`make demo`), taken with the throwaway Playwright script
+  (not committed).
+- Placeholders `OWNER` in the README, manifest, marketplace and module path are replaced at publish
+  time (see `RELEASING.md`).
+
 ## Later
 
 - `WorkingPatch` spawns one `git diff --no-index` per untracked file (up to 200). Fine on

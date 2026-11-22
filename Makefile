@@ -12,7 +12,7 @@ DIST_DIR       := plugin/scripts/dist
 # Playwright is run through node: npm/npx may be unavailable or misconfigured on some machines.
 PLAYWRIGHT ?= node e2e/node_modules/@playwright/test/cli.js
 
-.PHONY: build check install dist dist-local validate e2e
+.PHONY: build check install dist dist-local validate e2e demo
 
 build:
 	go build -ldflags "$(LDFLAGS)" -o $(BIN) ./cmd/agentlog
@@ -49,3 +49,8 @@ validate:
 
 e2e: build
 	$(PLAYWRIGHT) test --config e2e/playwright.config.ts
+
+# A realistic demo repo to try the UI: bin/agentlog ui /tmp/agentlog-demo
+demo: build
+	scripts/make-demo-repo.sh /tmp/agentlog-demo
+	@echo "demo repo ready. Try: $(BIN) ui /tmp/agentlog-demo"
