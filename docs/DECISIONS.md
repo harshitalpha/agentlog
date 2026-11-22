@@ -78,6 +78,17 @@ Choices made where the spec was ambiguous or the real world disagreed. Newest la
   auto-commits force signing off.
 - `--standalone-hook` returns "not implemented yet" until T2.8.
 
+## Status and disable (M2)
+
+- **"Commits since baseline"** counts commits newer than the `Baseline snapshot before agent work`
+  commit, excluding init's own `Add agentlog commit rules…` commit, split by `DetectAgent`
+  (`""` → human, `auto` → auto, anything else → agent). With no baseline commit (e.g. `init` on a
+  clean repo) every commit counts. At most 5000 commits are scanned.
+- **`status --json` fields:** `repo, enabled, enabled_via ("repo"|"enforce_everywhere"|""), branch,
+  has_baseline, commits_since_baseline{agent,human,auto}, uncommitted_files, ui_url`.
+- **`runningUIURL` and `stopRunningUI`** in `cli/status.go` are placeholders for `uiproc`; they are
+  wired in T3.4 (status shows the URL, disable stops the server).
+
 ## Later
 
 - `WorkingPatch` spawns one `git diff --no-index` per untracked file (up to 200). Fine on
