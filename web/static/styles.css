@@ -59,3 +59,36 @@ main { flex: 1; display: grid; grid-template-columns: 400px 1fr; min-height: 0; 
 #timeline { border-right: 1px solid var(--line); overflow-y: auto; background: var(--panel); }
 #detail { overflow-y: auto; min-width: 0; }
 .placeholder { height: 100%; min-height: 160px; display: grid; place-items: center; color: var(--faint); }
+
+/* ---- timeline ---------------------------------------------------------- */
+.day {
+  position: sticky; top: 0; z-index: 2; background: var(--panel);
+  padding: 12px 18px 6px; font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--faint);
+}
+.item {
+  position: relative; display: block; width: 100%; text-align: left;
+  padding: 10px 16px 10px 46px; border-left: 2px solid transparent;
+}
+.item:hover { background: var(--panel2); }
+.item.sel { background: var(--panel2); border-left-color: var(--accent); }
+.item::before { content: ""; position: absolute; left: 24px; top: 0; bottom: 0; width: 1px; background: var(--line); }
+.dot {
+  position: absolute; left: 19px; top: 15px; width: 11px; height: 11px; z-index: 1;
+  border-radius: 50%; background: var(--panel); border: 2px solid var(--faint);
+}
+.item.agent .dot { border-color: var(--accent); }
+.item.auto .dot { border-style: dashed; }
+.item.work .dot { border-color: var(--add); background: var(--add-bg); }
+.item.sel .dot { background: var(--accent); border-color: var(--accent); border-style: solid; }
+.subj {
+  font-weight: 500; color: var(--text); overflow: hidden;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+}
+.item.auto .subj { color: var(--dim); }
+.meta { display: flex; gap: 8px; align-items: center; margin-top: 3px; font: 12px var(--mono); color: var(--faint); }
+.badge { font: 11px var(--sans); padding: 0 6px; border-radius: 4px; background: rgba(232, 165, 75, .14); color: var(--accent); }
+.badge.auto { background: rgba(139, 147, 161, .14); color: var(--dim); }
+.badge.work { background: var(--add-bg); color: var(--add); }
+.stat .a { color: var(--add); }
+.stat .d { color: var(--del); }
+.empty { padding: 40px 24px; color: var(--dim); text-align: center; }

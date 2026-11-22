@@ -34,3 +34,28 @@ test('baseName and plural', () => {
   expect(plural(1, 'file')).toBe('1 file');
   expect(plural(2, 'file')).toBe('2 files');
 });
+
+test('buildRows: numbering, working row, order, filter', async () => {
+  // @ts-ignore
+  const { buildRows } = await import('../../web/static/util.js');
+  const commits = [
+    { hash: 'c3', short: 'c3', subject: 'Third', body: '', agent: 'Claude', date: '2026-11-22T10:00:00Z' },
+    { hash: 'c2', short: 'c2', subject: 'Second', body: 'mentions widget', agent: '', date: '2026-11-21T10:00:00Z' },
+    { hash: 'c1', short: 'c1', subject: 'First', body: '', agent: 'auto', date: '2026-11-20T10:00:00Z' },
+  ];
+  const hashes = (r: any[]) => r.map((x) => x.hash);
+  expect(buildRows([], 0)).toEqual([]);
+  const newest = buildRows(commits, 2);
+  expect(hashes(newest)).toEqual(['WORKING', 'c3', 'c2', 'c1']);
+  expect(newest.map((r: any) => r.n)).toEqual([0, 3, 2, 1]);
+  expect(newest[0].subject).toBe('Uncommitted changes (2 files)');
+  expect(buildRows(commits, 1)[0].subject).toBe('Uncommitted changes (1 file)');
+  expect(hashes(buildRows(commits, 2, { order: 'old' }))).toEqual(['c1', 'c2', 'c3', 'WORKING']);
+  expect(hashes(buildRows(commits, 0))).toEqual(['c3', 'c2', 'c1']);
+  expect(hashes(buildRows(commits, 0, { query: 'WIDGET' }))).toEqual(['c2']);
+  expect(hashes(buildRows(commits, 0, { query: 'auto' }))).toEqual(['c1']);
+  expect(hashes(buildRows(commits, 0, { query: 'zzz' }))).toEqual([]);
+  const files = new Map([['c3', ['internal/repo/orders.go']]]);
+  expect(hashes(buildRows(commits, 0, { query: 'orders.go', filesByHash: files }))).toEqual(['c3']);
+  expect(hashes(buildRows(commits, 0, { query: 'orders.go' }))).toEqual([]); // patch not loaded yet
+});

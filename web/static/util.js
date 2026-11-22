@@ -47,3 +47,29 @@ export function baseName(path) {
 export function plural(n, word) {
   return `${n} ${word}${n === 1 ? '' : 's'}`;
 }
+
+/**
+ * Timeline rows in display order. `commits` is newest first (the API order).
+ * n is the position counted from the oldest commit (1 = first). The working-tree
+ * pseudo-row (hash "WORKING", work: true) exists only when dirty > 0; it sits
+ * first in "new" order and last in "old" order.
+ * filesByHash maps a hash to the paths of its already-loaded patch (filter input).
+ */
+export function buildRows(commits, dirty, { query = '', order = 'new', filesByHash = new Map(), now = new Date() } = {}) {
+  let rows = commits.map((c, i) => ({ ...c, n: commits.length - i }));
+  if (dirty > 0) {
+    rows.unshift({
+      hash: 'WORKING', short: '', subject: `Uncommitted changes (${plural(dirty, 'file')})`, body: '',
+      author: '', agent: '', date: now.toISOString(), ins: 0, dels: 0, n: 0, work: true,
+    });
+  }
+  const q = (query || '').trim().toLowerCase();
+  if (q) {
+    rows = rows.filter((r) => {
+      const text = [r.subject, r.body, r.short, r.agent].join('\n').toLowerCase();
+      return text.includes(q) || (filesByHash.get(r.hash) || []).some((p) => p.toLowerCase().includes(q));
+    });
+  }
+  if (order === 'old') rows.reverse();
+  return rows;
+}
