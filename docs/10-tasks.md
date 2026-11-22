@@ -38,7 +38,7 @@ Work top to bottom. Tick each box only when its acceptance criteria pass. Commit
 - [x] **T3.1 Server + middleware.** Localhost bind, Host check, recover, GET-only, port fallback, idle timeout.
 - [x] **T3.2 Endpoints.** `/api/repo`, `/api/commits`, `/api/patch`, `/api/file`, embedded static.
 - [x] **T3.3 `agentlog ui` foreground.** Browser open, clean shutdown, port from flag/env/default.
-- [ ] **T3.4 `uiproc`: `--detach` / `--stop`.** Reuse a live server, spawn detached, `ui.json`, log file.
+- [x] **T3.4 `uiproc`: `--detach` / `--stop`.** Reuse a live server, spawn detached, `ui.json`, log file.
   *Accept (M3):* all tests in `07-http-api.md` pass. `ui --detach` twice gives the same PID and URL, and `--stop` kills it.
 
 ## M4: Web UI

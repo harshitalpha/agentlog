@@ -8,6 +8,7 @@ import (
 
 	"github.com/OWNER/agentlog/internal/agent"
 	"github.com/OWNER/agentlog/internal/gitx"
+	"github.com/OWNER/agentlog/internal/uiproc"
 )
 
 // openRepoArg resolves [path] to a repo, printing the standard error.
@@ -54,9 +55,13 @@ func statusCmd(args []string, s streams) int {
 }
 
 // runningUIURL returns the URL of this repo's running UI server, or "".
-// Wired to uiproc in T3.4.
-func runningUIURL(*gitx.Repo) string { return "" }
+func runningUIURL(repo *gitx.Repo) string {
+	if st, ok := uiproc.Running(repo); ok {
+		return st.URL
+	}
+	return ""
+}
 
-// stopRunningUI stops this repo's UI server if one is running.
-// Wired to uiproc in T3.4.
-func stopRunningUI(*gitx.Repo) {}
+// stopRunningUI stops this repo's background UI server if one is running.
+// Used by disable and uninstall; problems are not worth failing them for.
+func stopRunningUI(repo *gitx.Repo) { _, _ = uiproc.Stop(repo) }

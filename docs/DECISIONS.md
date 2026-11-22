@@ -151,6 +151,33 @@ ever run inside a repo. Verified: a full `go test ./...` leaves HEAD, status and
 - **`Serve` returns `ErrIdleTimeout`** after 8 h without requests (treated as a normal exit by the
   CLI) and nil when cancelled. Ports: try `port..port+10`, `0` means any free port.
 
+## UI process management (M3)
+
+- **A pid is never trusted on its own.** `Stop` only signals a process after `GET /api/repo` on the
+  recorded URL answers with this repo's path (pids get reused; `ui.json` is a plain file anyone can
+  corrupt). A live pid that is not our server is left alone (`NotOurs`: stale file removed, nothing
+  killed). Pids `<= 1` are never signalled: `kill(0)` and `kill(-1)` address whole process groups.
+  `Running` applies the same check, so repo B can never adopt repo A's server.
+- **`--detach` prints just the URL** (one line) so the `/agentlog:ui` skill and scripts can use it
+  directly. It opens the browser only when it starts a *new* server (not on reuse) and never with
+  `--no-open`.
+- **The parent learns the real port from `ui.log`** (the child's `→ http://127.0.0.1:<port>` banner),
+  because the child may fall back across ports. The log is truncated on every spawn so a stale line
+  can't be mistaken for the new server. A child that exits at once, or doesn't answer within 3 s, is
+  reported with the last log line and cleaned up.
+- **The child is re-executed as `ui --no-open --port N <repo-root>` in its own session** (`Setsid`
+  on unix; `CREATE_NEW_PROCESS_GROUP|DETACHED_PROCESS` on Windows, compile-checked only). The spawner
+  keeps a reaper goroutine so long-lived callers don't accumulate zombies (a zombie still answers
+  `kill(pid, 0)`).
+- **`DetachOptions.Exe` / `cli.uiExecutable` are injectable** because under `go test`
+  `os.Executable()` is the test binary, not agentlog.
+- **Stop output:** `✓ stopped`, `agentlog UI is not running` (exit 0), or a stderr note for `NotOurs`.
+  `disable` and `uninstall` stop the server silently; `status` shows the URL only for a verified server.
+- **Worktrees share `.git/agentlog/`** (git's common dir), so two worktrees of one repo share one
+  `ui.json`. The path check means the second won't reuse the first's server, but it overwrites the
+  record, so the first becomes an orphan that exits via the 8 h idle timeout. Acceptable for v1.
+- **Stale `stop-*`/`start-*` hook locks** are swept lazily by the next hook run (>1 min old).
+
 ## Later
 
 - `WorkingPatch` spawns one `git diff --no-index` per untracked file (up to 200). Fine on
