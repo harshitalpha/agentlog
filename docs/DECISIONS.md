@@ -133,6 +133,24 @@ Fix: the stub test only runs commands that are still stubs; the `cli` and `agent
 ever run inside a repo. Verified: a full `go test ./...` leaves HEAD, status and git config unchanged.
 **Rule for new tests:** never run a command whose default path is `.` without an explicit temp dir.
 
+## HTTP server (M3)
+
+- **Handler chain:** recover → Host check → GET-only → idle bookkeeping → routes. Host is checked
+  before the method (a POST with a bad Host is 403), and idle time is only refreshed by requests that
+  pass the Host check, so a hostile page cannot keep the server alive.
+- **Host check is exact:** `127.0.0.1:<port>` or `localhost:<port>` (case-insensitive). `[::1]`, a
+  missing port and look-alikes (`127.0.0.1.evil.com`) are 403, as the spec says.
+- **`limit` query:** non-integer or `< 1` is 400; above 5000 is clamped.
+- **`/api/file` errors:** unknown path 404, directory 404, over 2 MB 413 `file too large`, binary
+  `200 {"content":"","binary":true}`. `WORKING` reads from disk only after `EvalSymlinks` proves the
+  file is inside the repo; symlinks escaping the repo are 404 (a symlink that stays inside works).
+- **`/api/patch` for an unknown commit is 404** `commit not found`; `truncated` is omitted when false.
+- **Non-canonical static paths** (`/../x`, `//x`) get ServeMux's 307 to the cleaned path, whose
+  answer is 404. Only files in the embedded FS are ever served, with `nosniff`.
+- **`/api/repo` runs its three git calls concurrently** to stay well under 100 ms on slow git.
+- **`Serve` returns `ErrIdleTimeout`** after 8 h without requests (treated as a normal exit by the
+  CLI) and nil when cancelled. Ports: try `port..port+10`, `0` means any free port.
+
 ## Later
 
 - `WorkingPatch` spawns one `git diff --no-index` per untracked file (up to 200). Fine on
