@@ -92,3 +92,56 @@ main { flex: 1; display: grid; grid-template-columns: 400px 1fr; min-height: 0; 
 .stat .a { color: var(--add); }
 .stat .d { color: var(--del); }
 .empty { padding: 40px 24px; color: var(--dim); text-align: center; }
+
+/* ---- detail ------------------------------------------------------------ */
+.placeholder.short { height: 200px; }
+.detail { max-width: 1200px; margin: 0 auto; padding: 26px 30px 80px; }
+.d-head h1 { font-size: 21px; line-height: 1.35; margin: 0 0 8px; font-weight: 600; letter-spacing: -.01em; overflow-wrap: anywhere; }
+.d-body { white-space: pre-wrap; color: var(--dim); margin: 0 0 12px; font-size: 13.5px; overflow-wrap: anywhere; }
+.d-meta {
+  display: flex; flex-wrap: wrap; gap: 14px; padding-bottom: 16px; border-bottom: 1px solid var(--line);
+  color: var(--dim); font: 12.5px var(--mono);
+}
+.d-meta b { color: var(--text); font-weight: 500; }
+.copy { color: var(--accent); }
+.banner {
+  margin-bottom: 16px; padding: 8px 12px; border: 1px solid rgba(232, 165, 75, .4); border-radius: 7px;
+  background: rgba(232, 165, 75, .1); color: var(--accent); font-size: 13px;
+}
+.files { margin: 16px 0 18px; display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { font: 12px var(--mono); padding: 3px 9px; border-radius: 6px; border: 1px solid var(--line); color: var(--dim); background: var(--panel); }
+.chip:hover { color: var(--text); border-color: var(--faint); }
+.chip i { font-style: normal; margin-left: 6px; }
+.chip i.a { color: var(--add); }
+.chip i.d { color: var(--del); }
+
+.file { border: 1px solid var(--line); border-radius: 9px; margin-bottom: 16px; overflow: hidden; background: var(--panel); }
+.f-head {
+  position: sticky; top: 0; z-index: 1; display: flex; align-items: center; gap: 10px;
+  padding: 8px 12px; background: var(--panel2); border-bottom: 1px solid var(--line);
+}
+.file.closed .f-head { border-bottom-color: transparent; }
+.tog { width: 14px; color: var(--faint); transition: transform .15s; }
+.file.closed .tog { transform: rotate(-90deg); }
+.file.closed table, .file.closed .bin { display: none; }
+.f-path { flex: 1; min-width: 0; font: 13px var(--mono); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.f-status { font-size: 11px; padding: 0 6px; border-radius: 4px; border: 1px solid var(--line); color: var(--dim); }
+.f-status.added { color: var(--add); border-color: rgba(63, 185, 80, .4); }
+.f-status.deleted { color: var(--del); border-color: rgba(248, 81, 73, .4); }
+.f-stat { font: 12px var(--mono); }
+.f-btn { font-size: 12px; color: var(--dim); padding: 2px 8px; border-radius: 5px; border: 1px solid var(--line); }
+.f-btn:hover { color: var(--text); }
+.bin { padding: 14px; color: var(--dim); font-size: 13px; }
+
+table.diff { width: 100%; border-collapse: collapse; table-layout: fixed; font: 12.5px/1.55 var(--mono); }
+.diff td { padding: 0 10px; vertical-align: top; }
+.diff td.n { padding: 0 8px; text-align: right; color: var(--faint); user-select: none; }
+.diff td.c { white-space: pre-wrap; word-break: break-all; }
+.diff tr.add td.c { background: var(--add-bg); }
+.diff tr.add td.n { background: var(--add-num); }
+.diff tr.del td.c { background: var(--del-bg); }
+.diff tr.del td.n { background: var(--del-num); }
+.diff tr.add td.c::before { content: "+"; color: var(--add); margin-right: 6px; }
+.diff tr.del td.c::before { content: "−"; color: var(--del); margin-right: 6px; }
+.diff tr.ctx td.c::before { content: " "; margin-right: 6px; }
+.diff tr.hunk td { padding: 3px 10px; background: var(--hunk); color: var(--hunk-text); white-space: pre-wrap; }
